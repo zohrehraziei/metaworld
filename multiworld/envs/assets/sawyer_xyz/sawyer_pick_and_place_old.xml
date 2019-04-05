@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <mujoco>
-    <include file="shared_config.xml"></include>
+    <include file="shared_config_old.xml"></include>
     <worldbody>
-        <include file="sawyer_xyz_base_old.xml"></include>
+        <include file="sawyer_base_old.xml"></include>
         <body name="obj" pos="0 0.6 0.02">
             <joint name="objjoint" type="free" limited='false' damping="0.0" armature="0" />
             <inertial pos="0 0 0" mass="0.01" diaginertia="100000 100000 100000"/>
+            
             <geom name="objGeom" type="box" pos="0 0 0" solimp="0.99 0.99 0.01"
                   size="0.02 0.02 0.02" rgba="0 0 1 1" solref="0.01 1"
                   contype="1" conaffinity="1" friction="1 0.1 0.002" condim="4" 

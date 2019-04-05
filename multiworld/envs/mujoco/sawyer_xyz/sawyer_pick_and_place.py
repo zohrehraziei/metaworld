@@ -208,21 +208,11 @@ class SawyerPickAndPlaceEnv(MultitaskEnv, SawyerXYZEnv):
         #         -1000
         #     )
 
-    def _set_obj_xyz_quat(self, pos, angle):
-        quat = Quaternion(axis = [0,0,1], angle = angle).elements
-        qpos = self.data.qpos.flat.copy()
-        qvel = self.data.qvel.flat.copy()
-        qpos[9:12] = pos.copy()
-        qpos[12:16] = quat.copy()
-        qvel[9:15] = 0
-        self.set_state(qpos, qvel)
-
-
     def _set_obj_xyz(self, pos):
         qpos = self.data.qpos.flat.copy()
         qvel = self.data.qvel.flat.copy()
-        qpos[9:12] = pos.copy()
-        qvel[9:15] = 0
+        qpos[8:11] = pos.copy()
+        qvel[8:15] = 0
         self.set_state(qpos, qvel)
 
     def reset_model(self):
@@ -269,14 +259,14 @@ class SawyerPickAndPlaceEnv(MultitaskEnv, SawyerXYZEnv):
             self.data.set_mocap_pos('mocap', hand_goal)
             self.data.set_mocap_quat('mocap', np.array([1, 0, 1, 0]))
             self.do_simulation(np.array([-1]))
-        error = self.data.get_site_xpos('endEffector') - hand_goal
+        error = self.data.get_site_xpos('endeffector') - hand_goal
         
         print(state_goal)
         print('error', error)
         corrected_obj_pos = state_goal[3:] + error
         corrected_obj_pos[2] = max(corrected_obj_pos[2], self.obj_init_z)
         print('corrected_obj_pos', corrected_obj_pos)
-        print('hand pos', self.data.get_site_xpos('endEffector'))
+        print('hand pos', self.data.get_site_xpos('endeffector'))
         self._set_obj_xyz(corrected_obj_pos)
         if corrected_obj_pos[2] > .03:
             action = np.array(1)
