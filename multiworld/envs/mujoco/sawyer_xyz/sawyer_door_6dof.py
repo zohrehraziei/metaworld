@@ -331,7 +331,7 @@ class SawyerDoor6DOFEnv(
 
 if __name__ == '__main__':
     import time
-    env = SawyerDoorEnv()
+    env = SawyerDoor6DOFEnv()
     for _ in range(1000000):
         env.render()
         time.sleep(0.05)

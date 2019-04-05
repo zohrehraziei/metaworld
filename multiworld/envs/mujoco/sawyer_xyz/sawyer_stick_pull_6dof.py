@@ -387,7 +387,7 @@ class SawyerStickPull6DOFEnv(SawyerXYZEnv):
 
 if __name__ == '__main__':
     import time
-    env = SawyerStickpull6DOFEnv()
+    env = SawyerStickPull6DOFEnv()
     for _ in range(1000):
         env.reset()
         # for _ in range(10):

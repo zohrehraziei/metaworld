@@ -165,9 +165,13 @@ class SawyerButtonPressTopdown6DOFEnv(SawyerXYZEnv):
             done = False
         return ob, reward, done, {'reachDist': reachDist, 'goalDist': pressDist, 'epRew': reward, 'pickRew':None}
    
+
+    def get_button_angle(self):
+        return np.array([self.data.get_joint_qpos('buttonjoint')])
+
     def _get_obs(self):
         hand = self.get_endeff_pos()
-        objPos =  self.data.site_xpos[self.model.site_name2id('buttonStart')]
+        angle = self.get_button_angle()
         flat_obs = np.concatenate((hand, objPos))
         # if self.multitask:
         #     assert hasattr(self, '_state_goal_idx')
