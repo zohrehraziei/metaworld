@@ -1,4 +1,4 @@
-from multiworld.envs.mujoco.sawyer_xyz.sawyer_reach_6dof import SawyerReachXYZ6DOFEnv
+# from multiworld.envs.mujoco.sawyer_xyz.sawyer_reach_6dof import SawyerReachXYZ6DOFEnv
 from multiworld.envs.env_util import get_stat_in_paths, \
     create_stats_ordered_dict, get_asset_full_path
 
@@ -55,9 +55,9 @@ class SawyerThrowEnv(SawyerPickAndPlaceEnv):
         self.set_goal(goal)
         self._set_goal_marker(self._state_goal)
 
-        self.set_to_goal(
-           {'state_desired_goal': self.generate_uncorrected_env_goals(1)['state_desired_goal'][0]}
-        )
+
+        set_goal =  {'state_desired_goal': self.generate_uncorrected_env_goals(1)['state_desired_goal'][0]}
+        self.set_to_goal(set_goal)
         # Close gripper for 20 timesteps
         # action = np.array([0, 0, 0, 1])
         # for _ in range(20):

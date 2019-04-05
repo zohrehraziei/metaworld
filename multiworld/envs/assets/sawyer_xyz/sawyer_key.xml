@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mujoco>
+  <include file="shared_config.xml"></include>
+  <worldbody>
+    <include file="sawyer_xyz_base_no_table.xml"></include>
+
+        <body name="obj" pos="0 0.6 0.02">
+            <joint name="objjoint" type="free" limited='false' damping="0.0" armature="0" />
+            <inertial pos="0 0 0" mass="0.01" diaginertia="100000 100000 100000"/>
+            <geom name="objGeom" type="box" pos="0 0 0" solimp="0.99 0.99 0.01"
+                  size="0.02 0.02 0.02" rgba="0 0 1 1" solref="0.01 1"
+                  contype="1" conaffinity="1" friction="1 0.1 0.002" condim="4" 
+            />
+
+        </body>
+
+
+        <body name="r_gripper_tool_frame" pos="0.18 .3 .5">
+            <site name="leg_bottom" pos="0 0 -0.25" size="0.01" />
+            <site name="leg_top" pos="0 0 0.05" size="0.01" />
+            <site name="leg_right" pos="0.15 0 -0.1" size="0.01" />
+            <body name="key" pos="0 0 -0.0">
+                <geom name="key_geom" rgba="0.545098 0.270588 0.07450987 1" type="cylinder" fromto="0 0 -0.25 0 0 0.05" size="0.028" density="2000" contype="1" conaffinity="1" />
+            </body>
+            <body name="key_head1" pos="0 -0.028 -0.225">
+                <geom name="key_head_geom1" rgba="0.545098 0.270588 0.07450987 1" type="cylinder" fromto="0 0 0 0 0 -0.025" size="0.028" density="2000" contype="1" conaffinity="1" />
+            </body>
+            <body name="key_head2" pos="0 -0.056 -0.225">
+                <geom name="key_head_geom2" rgba="0.545098 0.270588 0.07450987 1" type="cylinder" fromto="0 0 0 0 0 -0.025" size="0.028" density="2000" contype="1" conaffinity="1" />
+            </body>
+        </body>
+
+        <site name="goal" pos="0 0 0.3" size="0.02" rgba="0 0.8 0 1"/>
+
+        <body name="g1" pos="0.0 0.3 -0.2">
+            <geom name="g1" type="sphere" rgba="1.0 0.0 0.0 1" pos="0.0 0.0 0.0" size="0.01" />
+        </body>
+        <body name="g2" pos="0.0 0.3 0.1">
+            <geom name="g2" type="sphere" rgba="1.0 0.0 0.0 1" pos="0.0 0.0 0.0" size="0.01" />
+        </body>
+        <body name="g3" pos="-0.15 0.3 -0.05">
+            <geom name="g3" type="sphere" rgba="1.0 0.0 0.0 1" pos="0.0 0.0 0.0" size="0.01" />
+        </body>
+
+        <body name="w1" pos="0.216 0.3 -0.05">
+            <geom name="w1" rgba="0.2 0.2 0.8 1" type="box" size="0.183 0.469 0.025" contype="1" conaffinity="1" />
+        </body>
+
+        <body name="w2" pos="-0.216 0.3 -0.05">
+            <geom name="w2" rgba="0.2 0.2 0.8 0.5" type="box" size="0.183 0.469 0.025" contype="1" conaffinity="1" />
+        </body>
+
+        <body name="w3" pos="0.0 0.586 -0.05">
+            <geom name="w3" rgba="0.2 0.2 0.8 0.5" type="box" size="0.032 0.183 0.025" contype="1" conaffinity="1" />
+        </body>
+
+        <body name="w4" pos="0.0 0.084 -0.05">
+            <geom name="w4" rgba="0.2 0.2 0.8 0.5" type="box" size="0.032 0.19 0.025" contype="1" conaffinity="1" />  <!--<0.19 was 0.183>-->
+        </body>
+
+        <body name="wa1" pos="0.256 0.3 -0.12">
+            <geom name="wa1" rgba="0.2 1 1 0.5" type="box" size="0.143 0.469 0.025" contype="1" conaffinity="1" />
+        </body>
+
+        <body name="wa2" pos="-0.216 0.3 -0.12">
+            <geom name="wa2" rgba="0.2 1 1 0.5" type="box" size="0.183 0.469 0.025" contype="1" conaffinity="1" />
+        </body>
+
+        <body name="wa3" pos="0.0 0.586 -0.12">
+            <geom name="wa3" rgba="0.2 1 1 0.5" type="box" size="0.032 0.183 0.025" contype="1" conaffinity="1" />
+        </body>
+
+        <body name="wa4" pos="0.0 0.084 -0.12">
+            <geom name="wa4" rgba="0.2 1 1 0.5" type="box" size="0.032 0.19 0.025" contype="1" conaffinity="1" />  <!--<0.19 was 0.183>-->
+        </body>
+
+        <body name="wb1" pos="0.0 0.38 -0.148">
+            <geom name="wb1" rgba="0.1 0.5 0.1 0.5" type="box" size="0.183 0.025 0.002" contype="1" conaffinity="1" />
+        </body>
+
+        <body name="wb2" pos="0.0 0.38 -0.195">
+            <geom name="wb2" rgba="0.2 0.8 0.2 0.5" type="box" size="0.183 0.15 0.002" contype="1" conaffinity="1" />
+        </body>
+
+        <body name="wb3" pos="-0.216 0.3 -0.1715">
+            <geom name="wb3" rgba="0.9 0.2 0.8 0.5" type="box" size="0.183 0.469 0.0205" contype="1" conaffinity="1" />
+        </body>
+
+
+  </worldbody>
+
+</mujoco>

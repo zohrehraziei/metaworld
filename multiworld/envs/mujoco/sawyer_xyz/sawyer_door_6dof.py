@@ -84,8 +84,8 @@ class SawyerDoor6DOFEnv(
             dtype=np.float32,
         )
         self.observation_space = Box(
-            np.concatenate((hand_low, [min_angle], [min_angle])),
-            np.concatenate((hand_high, [max_angle], [max_angle])),
+            np.concatenate((hand_low, [min_angle, hand_low, hand_low], [min_angle, hand_low, hand_low])),
+            np.concatenate((hand_high, [max_anglem, hand_high, hand_high], [max_angle, hand_high, hand_high])),
             dtype=np.float32,
         )
         # self.observation_space = Dict([
@@ -142,7 +142,7 @@ class SawyerDoor6DOFEnv(
         pos = self.get_endeff_pos()
         angle = self.get_door_angle()
         # flat_obs = np.concatenate((pos, angle))
-        flat_obs = np.concatenate((pos, angle, [self._state_goal[-1]]))
+        flat_obs = np.concatenate((pos, [angle, 0, 0], [self._state_goal[-1], 0, 0]))
         return flat_obs
 
     def _get_obs_dict(self):

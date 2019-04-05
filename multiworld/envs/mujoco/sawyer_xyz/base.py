@@ -141,3 +141,5 @@ class SawyerXYZEnv(SawyerMocapBase, metaclass=abc.ABCMeta):
         delta_z = fixed_z - self.data.mocap_pos[0, 2]
         xyz_action = np.hstack((xy_action, delta_z))
         self.set_xyz_action(xyz_action)
+
+    

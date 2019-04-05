@@ -26,6 +26,8 @@ class SawyerBinPicking6DOFEnv(SawyerXYZEnv):
             liftThresh = 0.1,
             rewMode = 'orig',
             rotMode='fixed',
+            num_obs_objects=None,
+            multitask_env=False,
             **kwargs
     ):
         self.quick_init(locals())
@@ -86,6 +88,24 @@ class SawyerBinPicking6DOFEnv(SawyerXYZEnv):
                 np.hstack((self.hand_low, obj_low, goal_low[:2])),
                 np.hstack((self.hand_high, obj_high, goal_high[:2])),
         )
+
+        if self.num_obs_objects:
+            if self.multitask_env:
+                self.observation_space = Box(
+                        np.hstack((self.hand_low, obj_low * self.num_obs_space_obj_positions, goal_low, np.zeros(len(tasks)))),
+                        np.hstack((self.hand_high, obj_high * self.num_obs_space_obj_positions, goal_high, np.ones(len(tasks)))),
+                )
+            else:
+                self.observation_space = Box(
+                        np.hstack((self.hand_low, obj_low * self.num_obs_space_obj_positions, goal_low)),
+                        np.hstack((self.hand_high, obj_high * self.num_obs_space_obj_positions, goal_high)),
+                )
+
+
+        self.num_obs_objects = num_obs_objects
+        self.multitask_env = multitask_env
+
+
         # task = self.sample_task()
         # self._state_goal = np.array(task['goal'])
         # self.obj_init_pos = self.adjust_initObjPos(task['obj_init_pos'])

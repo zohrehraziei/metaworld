@@ -27,6 +27,9 @@ class SawyerHammer6DOFEnv(SawyerXYZEnv):
             liftThresh = 0.09,
             rotMode='fixed',#'fixed',
             rewMode='orig',
+            multitask=False,
+            multitask_num=1,
+            task_idx=None,
             **kwargs
     ):
         self.quick_init(locals())
@@ -58,7 +61,11 @@ class SawyerHammer6DOFEnv(SawyerXYZEnv):
         self.num_tasks = len(tasks)
         self.rewMode = rewMode
         self.rotMode = rotMode
+        self.multitask_num = multitask_num
+        
         self.hand_init_pos = np.array(hand_init_pos)
+        self._state_goal_idx = np.zeros(multitask_num)
+        self._state_goal_idx[task_idx] = 1
         if rotMode == 'fixed':
             self.action_space = Box(
                 np.array([-1, -1, -1, -1]),
@@ -86,8 +93,8 @@ class SawyerHammer6DOFEnv(SawyerXYZEnv):
         )
         self.goal_space = Box(np.array(goal_low), np.array(goal_high))
         self.observation_space = Box(
-                np.hstack((self.hand_low, obj_low, obj_low, obj_low, goal_low)),
-                np.hstack((self.hand_high, obj_high, obj_high, obj_high, goal_high)),
+                np.hstack((self.hand_low, obj_low, obj_low, obj_low, goal_low, np.zeros(self.multitask_num))),
+                np.hstack((self.hand_high, obj_high, obj_high, obj_high, goal_high, np.ones(self.multitask_num))),
         )
         self.reset()
 
@@ -124,7 +131,7 @@ class SawyerHammer6DOFEnv(SawyerXYZEnv):
         self.viewer.cam.trackbodyid = -1
 
     def step(self, action):
-        self.render()
+        # self.render()
         # self.set_xyz_action_rot(action[:7])
         if self.rotMode == 'euler':
             action_ = np.zeros(7)
@@ -158,7 +165,8 @@ class SawyerHammer6DOFEnv(SawyerXYZEnv):
         flat_obs = np.concatenate((hand, hammerPos, hammerHeadPos, objPos))
         return np.concatenate([
                 flat_obs,
-                self._state_goal
+                self._state_goal,
+                self._state_goal_idx
             ])
 
     def _get_obs_dict(self):

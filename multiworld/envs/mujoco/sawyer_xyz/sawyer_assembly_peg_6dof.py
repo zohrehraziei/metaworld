@@ -26,6 +26,8 @@ class SawyerNutAssembly6DOFEnv(SawyerXYZEnv):
             liftThresh = 0.15,
             rewMode = 'orig',
             rotMode='fixed',
+            num_obs_objects=None,
+            multitask_env=False,
             **kwargs
     ):
         self.quick_init(locals())
@@ -89,6 +91,24 @@ class SawyerNutAssembly6DOFEnv(SawyerXYZEnv):
         #     ('state_achieved_goal', self.goal_space),
         # ])
 
+        self.num_obs_objects = num_obs_objects
+        self.multitask_env = multitask_env
+
+        if self.num_obs_objects:
+            if self.multitask_env:
+                self.observation_space = Box(
+                        np.hstack((self.hand_low, obj_low * self.num_obs_space_obj_positions, goal_low, np.zeros(len(tasks)))),
+                        np.hstack((self.hand_high, obj_high * self.num_obs_space_obj_positions, goal_high, np.ones(len(tasks)))),
+                )
+            else:
+                self.observation_space = Box(
+                        np.hstack((self.hand_low, obj_low * self.num_obs_space_obj_positions, goal_low)),
+                        np.hstack((self.hand_high, obj_high * self.num_obs_space_obj_positions, goal_high)),
+                )                
+
+
+
+
 
     def get_goal(self):
         return {
@@ -151,11 +171,26 @@ class SawyerNutAssembly6DOFEnv(SawyerXYZEnv):
         hand = self.get_endeff_pos()
         graspPos =  self.data.get_geom_xpos('RoundNut-8')
         objPos = self.get_body_com('RoundNut')
-        flat_obs = np.concatenate((hand, graspPos, objPos))
-        return np.concatenate([
-                flat_obs,
+
+        obs = np.concatenate([
+                hand,
+                graspPos,
+                objPos,
                 self._state_goal
-            ])
+                ])
+
+        assert self.num_obs_objects > 2
+        if self.num_obs_objects:
+            pads = np.zeros(3) * self.num_obs_objects - 2
+            obs = np.concatenate([
+                    hand,
+                    graspPos,
+                    objPos,
+                    pads,
+                    self._state_goal
+                    ])
+
+        return obs
 
     def _get_obs_dict(self):
         hand = self.get_endeff_pos()

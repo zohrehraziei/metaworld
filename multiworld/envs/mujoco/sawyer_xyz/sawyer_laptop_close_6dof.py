@@ -10,6 +10,7 @@ from multiworld.envs.mujoco.sawyer_xyz.base import SawyerXYZEnv
 
 from pyquaternion import Quaternion
 from multiworld.envs.mujoco.utils.rotation import euler2quat
+import pdb
 
 class SawyerLaptopClose6DOFEnv(SawyerXYZEnv):
     def __init__(
@@ -26,6 +27,9 @@ class SawyerLaptopClose6DOFEnv(SawyerXYZEnv):
             min_angle=0,
             max_angle=1.57,
             rotMode='fixed',#'fixed',
+            multitask=False,
+            multitask_num=None,
+            task_idx=None,
             **kwargs
     ):
         self.quick_init(locals())
@@ -56,6 +60,11 @@ class SawyerLaptopClose6DOFEnv(SawyerXYZEnv):
         self.num_tasks = len(tasks)
         self.rotMode = rotMode
         self.hand_init_pos = np.array(hand_init_pos)
+
+        self.multitask_num = multitask_num
+        self._state_goal_idx = np.zeros(multitask_num)
+        self._state_goal_idx[task_idx] = 1
+
         if rotMode == 'fixed':
             self.action_space = Box(
                 np.array([-1, -1, -1, -1]),
@@ -82,10 +91,16 @@ class SawyerLaptopClose6DOFEnv(SawyerXYZEnv):
             np.hstack((self.hand_high, obj_high)),
         )
         self.goal_space = Box(np.array(goal_low), np.array(goal_high))
-        self.observation_space = Box(
-                np.hstack((self.hand_low, obj_low, goal_low, goal_low)),
-                np.hstack((self.hand_high, obj_high, goal_high, goal_high)),
-        )
+        if not multitask:
+            self.observation_space = Box(
+                    np.hstack((self.hand_low, obj_low, np.zeros(len(tasks)))),
+                    np.hstack((self.hand_high, obj_high, np.ones(len(tasks)))),
+            )
+        else:
+            self.observation_space = Box(
+                    np.hstack((self.hand_low, obj_low, obj_low, obj_low, obj_low, np.zeros(multitask_num))),
+                    np.hstack((self.hand_high, obj_high, obj_high, obj_high, obj_high, np.ones(multitask_num))),
+            )
         self.laptop_angle_idx = self.model.get_joint_qpos_addr('laptopjoint')
         self.reset()
 
@@ -122,7 +137,7 @@ class SawyerLaptopClose6DOFEnv(SawyerXYZEnv):
         self.viewer.cam.trackbodyid = -1
 
     def step(self, action):
-        self.render()
+        # self.render()
         # self.set_xyz_action_rot(action[:7])
         if self.rotMode == 'euler':
             action_ = np.zeros(7)
@@ -153,11 +168,14 @@ class SawyerLaptopClose6DOFEnv(SawyerXYZEnv):
         hand = self.get_endeff_pos()
         objPos =  self.data.site_xpos[self.model.site_name2id('laptopCoverTop')]
         angle = self.get_laptop_angle()
-        flat_obs = np.concatenate((hand, objPos, angle))
-        return np.concatenate([
+        flat_obs = np.concatenate((hand, objPos, np.array([angle[0], 0, 0])))
+        obs = np.concatenate([
                 flat_obs,
-                [self._state_goal]
+                [self._state_goal, 0, 0],
+                np.zeros(3),
+                self._state_goal_idx
             ])
+        return obs
 
     def _get_obs_dict(self):
         hand = self.get_endeff_pos()
