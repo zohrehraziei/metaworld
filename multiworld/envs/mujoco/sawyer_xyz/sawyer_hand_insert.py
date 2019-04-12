@@ -62,8 +62,8 @@ class SawyerHandInsert6DOFEnv(SawyerXYZEnv):
         self.hand_init_pos = np.array(hand_init_pos)
         self.multitask = multitask
         self.multitask_num = multitask_num
-        self._state_goal_idx = np.zeros(multitask_num)
-        self._state_goal_idx[task_idx] = 1
+        # self._state_goal_idx = np.zeros(multitask_num)
+        self._state_goal_idx = task_idx
         
         if rotMode == 'fixed':
             self.action_space = Box(
@@ -98,8 +98,8 @@ class SawyerHandInsert6DOFEnv(SawyerXYZEnv):
             )
         else:
             self.observation_space = Box(
-                    np.hstack((self.hand_low, obj_low, obj_low, obj_low, obj_low, np.zeros(multitask_num))),
-                    np.hstack((self.hand_high, obj_high, obj_high, obj_high, obj_high, np.ones(multitask_num))),
+                    np.hstack((self.hand_low, obj_low, obj_low, obj_low, goal_low, [0])),
+                    np.hstack((self.hand_high, obj_high, obj_high, obj_high, goal_high, [multitask_num - 1])),
             )
         self.reset()
 
@@ -191,7 +191,7 @@ class SawyerHandInsert6DOFEnv(SawyerXYZEnv):
         #             self._state_goal_idx
         #         ])
         if self.multitask:
-            obs = np.concatenate([hand, np.zeros(3), np.zeros(3), np.zeros(3), np.zeros(3), self._state_goal_idx])
+            obs = np.hstack([hand, np.zeros(3), np.zeros(3), np.zeros(3), np.zeros(3), self._state_goal_idx])
         else:
             obs = np.concatenate([hand, np.zeros(3), np.zeros(3), np.zeros(3), np.zeros(3)])
 

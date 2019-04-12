@@ -62,8 +62,9 @@ class SawyerLaptopClose6DOFEnv(SawyerXYZEnv):
         self.hand_init_pos = np.array(hand_init_pos)
 
         self.multitask_num = multitask_num
-        self._state_goal_idx = np.zeros(multitask_num)
-        self._state_goal_idx[task_idx] = 1
+        # self._state_goal_idx = np.zeros(multitask_num)
+        # self._state_goal_idx[task_idx] = 1
+        self._state_goal_idx = task_idx
 
         if rotMode == 'fixed':
             self.action_space = Box(
@@ -98,8 +99,8 @@ class SawyerLaptopClose6DOFEnv(SawyerXYZEnv):
             )
         else:
             self.observation_space = Box(
-                    np.hstack((self.hand_low, obj_low, obj_low, obj_low, obj_low, np.zeros(multitask_num))),
-                    np.hstack((self.hand_high, obj_high, obj_high, obj_high, obj_high, np.ones(multitask_num))),
+                    np.hstack((self.hand_low, obj_low, obj_low, obj_low, [goal_low, 0, 0], [0])),
+                    np.hstack((self.hand_high, obj_high, obj_high, obj_high, [goal_high, 0, 0], [multitask_num - 1])),
             )
         self.laptop_angle_idx = self.model.get_joint_qpos_addr('laptopjoint')
         self.reset()
@@ -169,7 +170,7 @@ class SawyerLaptopClose6DOFEnv(SawyerXYZEnv):
         objPos =  self.data.site_xpos[self.model.site_name2id('laptopCoverTop')]
         angle = self.get_laptop_angle()
         flat_obs = np.concatenate((hand, objPos, np.array([angle[0], 0, 0])))
-        obs = np.concatenate([
+        obs = np.hstack([
                 flat_obs,
                 [self._state_goal, 0, 0],
                 np.zeros(3),

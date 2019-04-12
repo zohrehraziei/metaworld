@@ -18,7 +18,7 @@ class SawyerButtonPressTopdown6DOFEnv(SawyerXYZEnv):
             hand_high=(0.5, 1, 0.5),
             obj_low=(-0.1, 0.8, 0.05),
             obj_high=(0.1, 0.9, 0.05),
-            random_init=True,
+            random_init=False,
             # tasks = [{'goal': np.array([0, 0.88, 0.1]), 'obj_init_pos':np.array([0., 0.88, 0.15]), 'obj_init_qpos':0.}], 
             tasks = [{'goal': np.array([0, 0.88, 0.1]), 'obj_init_pos':np.array([0, 0.8, 0.05])}], 
             goal_low=None,
@@ -108,7 +108,7 @@ class SawyerButtonPressTopdown6DOFEnv(SawyerXYZEnv):
     @property
     def model_name(self):     
 
-        return get_asset_full_path('sawyer_xyz/sawyer_button_press_topdown.xml')
+        return get_asset_full_path('sawyer_xyz/sawyer_dial.xml')
         #return get_asset_full_path('sawyer_xyz/pickPlace_fox.xml')
 
     def viewer_setup(self):
@@ -172,18 +172,18 @@ class SawyerButtonPressTopdown6DOFEnv(SawyerXYZEnv):
     def _get_obs(self):
         hand = self.get_endeff_pos()
         angle = self.get_button_angle()
-        flat_obs = np.concatenate((hand, objPos))
+        # flat_obs = np.concatenate((hand, objPos))
         # if self.multitask:
         #     assert hasattr(self, '_state_goal_idx')
         #     return np.concatenate([
         #             flat_obs,
         #             self._state_goal_idx
         #         ])
-        return np.concatenate([
-                flat_obs,
+        print('angle', angle)
+        return np.hstack([
+                hand,
                 self._state_goal,
-                np.zeros(3),
-                np.zeros(3),
+                angle,
                 self._state_goal_idx
             ])
 
@@ -264,8 +264,9 @@ class SawyerButtonPressTopdown6DOFEnv(SawyerXYZEnv):
             self._state_goal = button_pos
             self._state_goal[2] -= 0.02
         # self._set_obj_xyz(self.obj_init_qpos)
-        self.sim.model.body_pos[self.model.body_name2id('box')] = self.obj_init_pos
-        self.sim.model.body_pos[self.model.body_name2id('button')] = button_pos
+        # self.sim.model.body_pos[self.model.body_name2id('box')] = self.obj_init_pos
+        # print(button_pos)
+            self.sim.model.body_pos[self.model.body_name2id('button')] = button_pos
         self.curr_path_length = 0
         self.maxDist = np.abs(self.data.site_xpos[self.model.site_name2id('buttonStart')][2] - self._state_goal[2])
         #Can try changing this

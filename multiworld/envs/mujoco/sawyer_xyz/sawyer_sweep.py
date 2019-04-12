@@ -63,8 +63,8 @@ class SawyerSweep6DOFEnv(SawyerXYZEnv):
         self.hand_init_pos = np.array(hand_init_pos)
         self.multitask = multitask
         self.multitask_num = multitask_num
-        self._state_goal_idx = np.zeros(multitask_num)
-        self._state_goal_idx[task_idx] = 1
+        self._state_goal_idx = task_idx
+        # self._state_goal_idx[task_idx] = 1
         if rotMode == 'fixed':
             self.action_space = Box(
                 np.array([-1, -1, -1, -1]),
@@ -98,8 +98,8 @@ class SawyerSweep6DOFEnv(SawyerXYZEnv):
             )
         else:
             self.observation_space = Box(
-                    np.hstack((self.hand_low, obj_low, obj_low, obj_low, obj_low, np.zeros(self.multitask_num))),
-                    np.hstack((self.hand_high, obj_high, obj_high, obj_high, obj_high, np.ones(self.multitask_num))),
+                    np.hstack((self.hand_low, obj_low, obj_low, obj_low, goal_low, [0])),
+                    np.hstack((self.hand_high, obj_high, obj_high, obj_high, goal_high, [multitask_num - 1])),
             )
         self.reset()
 
@@ -191,7 +191,7 @@ class SawyerSweep6DOFEnv(SawyerXYZEnv):
         #             flat_obs,
         #             self._state_goal_idx
         #         ])
-        obs = np.concatenate([
+        obs = np.hstack([
                 flat_obs,
                 self._state_goal,
                 np.zeros(3),

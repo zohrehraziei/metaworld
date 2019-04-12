@@ -59,8 +59,9 @@ class SawyerButtonPressTopdown6DOFEnv(SawyerXYZEnv):
         self.rotMode = rotMode
         self.hand_init_pos = np.array(hand_init_pos)
         self.multitask_num = multitask_num
-        self._state_goal_idx = np.zeros(multitask_num)
-        self._state_goal_idx[task_idx] = 1
+        # self._state_goal_idx = np.zeros(multitask_num)
+        # self._state_goal_idx[task_idx] = 1
+        self._state_goal_idx = task_idx
         if rotMode == 'fixed':
             self.action_space = Box(
                 np.array([-1, -1, -1, -1]),
@@ -94,8 +95,8 @@ class SawyerButtonPressTopdown6DOFEnv(SawyerXYZEnv):
             )
         else:
             self.observation_space = Box(
-                    np.hstack((self.hand_low, obj_low, obj_low, obj_low, obj_low, np.zeros(multitask_num))),
-                    np.hstack((self.hand_high, obj_high, obj_high, obj_high, obj_high, np.ones(multitask_num))),
+                    np.hstack((self.hand_low, obj_low, obj_low, obj_low, goal_low, [0])),
+                    np.hstack((self.hand_high, obj_high, obj_high, obj_high, goal_high, [multitask_num - 1])),
             )
         self.reset()
 
@@ -175,7 +176,7 @@ class SawyerButtonPressTopdown6DOFEnv(SawyerXYZEnv):
         #             flat_obs,
         #             self._state_goal_idx
         #         ])
-        return np.concatenate([
+        return np.hstack([
                 flat_obs,
                 self._state_goal,
                 np.zeros(3),
