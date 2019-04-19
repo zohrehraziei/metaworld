@@ -1,337 +1,366 @@
-import abc
 from collections import OrderedDict
-
-import mujoco_py
 import numpy as np
-import sys
-from multiworld.envs.mujoco.mujoco_env import MujocoEnv
-from gym.spaces import Box, Dict
-from multiworld.core.serializable import Serializable
-from multiworld.envs.env_util import (
-    get_stat_in_paths,
-    create_stats_ordered_dict, get_asset_full_path,
-)
+from gym.spaces import  Dict , Box
+
+
+from multiworld.envs.env_util import get_stat_in_paths, \
+    create_stats_ordered_dict, get_asset_full_path
 from multiworld.core.multitask_env import MultitaskEnv
 from multiworld.envs.mujoco.sawyer_xyz.base import SawyerXYZEnv
-from multiworld.envs.mujoco.cameras import sawyer_door_env_camera_v0
+
+from pyquaternion import Quaternion
 from multiworld.envs.mujoco.utils.rotation import euler2quat
-# TODO: use euler as action instead of quat
+import pdb
 
-
-
-class SawyerLeverPull6DOFEnv(
-    SawyerXYZEnv,
-    MultitaskEnv,
-    Serializable,
-    metaclass=abc.ABCMeta,
-):
+class SawyerLeverPull6DOFEnv(SawyerXYZEnv):
     def __init__(
-        self,
-        goal_low=None,
-        goal_high=None,
-        action_reward_scale=0,
-        reward_type='angle_difference',
-        indicator_threshold=(.02, .03),
-        fix_goal=True,
-        fixed_goal=(0, .45, .12, -np.pi/4),
-        reset_free=False,
-        fixed_hand_z=0.12,
-        hand_low=(-0.25, 0.3, .12),
-        # hand_high=(0.25, 0.6, .12),
-        hand_high=(0.25, 0.8, .12),
-        target_pos_scale=1,
-        target_angle_scale=1,
-        min_angle=-1.5708,
-        max_angle=0,
-        xml_path='sawyer_xyz/sawyer_door_pull.xml',
-        frame_skip=5,
-        **sawyer_xyz_kwargs
+            self,
+            hand_low=(-0.5, 0.40, 0.05),
+            hand_high=(0.5, 1, 0.5),
+            obj_low=(-0.1, 0.8, 0.05),
+            obj_high=(0.1, 0.9, 0.05),
+            random_init=False,
+            # tasks = [{'goal': np.array([0, 0.88, 0.1]), 'obj_init_pos':np.array([0., 0.88, 0.15]), 'obj_init_qpos':0.}], 
+            tasks = [{'goal': np.array([0, 0.88, 0.1]), 'obj_init_pos':np.array([0, 0.8, 0.05])}], 
+            goal_low=None,
+            goal_high=None,
+            hand_init_pos = (0, 0.6, 0.2),
+            rotMode='fixed',#'fixed',
+            multitask=False,
+            multitask_num=None,
+            task_idx=None,
+            **kwargs
     ):
         self.quick_init(locals())
-        self.model_name = get_asset_full_path(xml_path)
         SawyerXYZEnv.__init__(
             self,
-            self.model_name,
+            frame_skip=5,
+            action_scale=1./100,
             hand_low=hand_low,
             hand_high=hand_high,
-            frame_skip=frame_skip,
-            **sawyer_xyz_kwargs
+            model_name=self.model_name,
+            **kwargs
         )
-        MultitaskEnv.__init__(self)
+        if obj_low is None:
+            obj_low = self.hand_low
 
-        self.reward_type = reward_type
-        self.indicator_threshold = indicator_threshold
-
-        self.fix_goal = fix_goal
-        self.fixed_goal = np.array(fixed_goal)
-        self._state_goal = None
-        self.fixed_hand_z = fixed_hand_z
-
-        self.action_space = Box(np.array([-1, -1, -np.pi/4, -1, -1, -1]), np.array([1, 1, np.pi/4, 1, 1, 1]), dtype=np.float32)
-        # self.action_space = Box(np.array([-1, -1, -np.pi, -np.pi/2, -np.pi]), np.array([1, 1, np.pi, np.pi/2, np.pi]), dtype=np.float32)
-        self.state_space = Box(
-            np.concatenate((hand_low, [min_angle])),
-            np.concatenate((hand_high, [max_angle])),
-            dtype=np.float32,
-        )
         if goal_low is None:
-            goal_low = self.state_space.low
+            goal_low = self.hand_low
+
+        if obj_high is None:
+            obj_high = self.hand_high
+        
         if goal_high is None:
-            goal_high = self.state_space.high
-        self.goal_space = Box(
-            np.array(goal_low),
-            np.array(goal_high),
-            dtype=np.float32,
+            goal_high = self.hand_high
+
+        self.random_init = random_init
+        self.max_path_length = 150#150
+        self.tasks = tasks
+        self.num_tasks = len(tasks)
+        self.rotMode = rotMode
+        self.hand_init_pos = np.array(hand_init_pos)
+        self.multitask_num = multitask_num
+        self._state_goal_idx = np.zeros(multitask_num)
+        self._state_goal_idx[task_idx] = 1
+        if rotMode == 'fixed':
+            self.action_space = Box(
+                np.array([-1, -1, -1, -1]),
+                np.array([1, 1, 1, 1]),
+            )
+        elif rotMode == 'rotz':
+            self.action_rot_scale = 1./50
+            self.action_space = Box(
+                np.array([-1, -1, -1, -np.pi, -1]),
+                np.array([1, 1, 1, np.pi, 1]),
+            )
+        elif rotMode == 'quat':
+            self.action_space = Box(
+                np.array([-1, -1, -1, 0, -1, -1, -1, -1]),
+                np.array([1, 1, 1, 2*np.pi, 1, 1, 1, 1]),
+            )
+        else:
+            self.action_space = Box(
+                np.array([-1, -1, -1, -np.pi/2, -np.pi/2, 0, -1]),
+                np.array([1, 1, 1, np.pi/2, np.pi/2, np.pi*2, 1]),
+            )
+        self.obj_and_goal_space = Box(
+            np.array(obj_low),
+            np.array(obj_high),
         )
-        self.observation_space = Box(
-            np.concatenate((hand_low, [min_angle, hand_low, hand_low], [min_angle, hand_low, hand_low])),
-            np.concatenate((hand_high, [max_anglem, hand_high, hand_high], [max_angle, hand_high, hand_high])),
-            dtype=np.float32,
-        )
-        # self.observation_space = Dict([
-        #     ('observation', self.state_space),
-        #     ('desired_goal', self.goal_space),
-        #     ('achieved_goal', self.state_space),
-        #     ('state_observation', self.state_space),
-        #     ('state_desired_goal', self.goal_space),
-        #     ('state_achieved_goal', self.state_space),
-        # ])
-        self.action_reward_scale = action_reward_scale
-        self.target_pos_scale = target_pos_scale
-        self.target_angle_scale = target_angle_scale
-        self.reset_free = reset_free
-        self.door_angle_idx = self.model.get_joint_qpos_addr('doorjoint')
+        self.goal_space = Box(np.array(goal_low), np.array(goal_high))
+        if not multitask:
+            self.observation_space = Box(
+                    np.hstack((self.hand_low, obj_low, np.zeros(len(tasks)))),
+                    np.hstack((self.hand_high, obj_high, np.ones(len(tasks)))),
+            )
+        else:
+            self.observation_space = Box(
+                    np.hstack((self.hand_low, obj_low, obj_low, obj_low, obj_low, np.zeros(multitask_num))),
+                    np.hstack((self.hand_high, obj_high, obj_high, obj_high, obj_high, np.ones(multitask_num))),
+            )
         self.reset()
 
-    def viewer_setup(self):
-        sawyer_door_env_camera_v0(self.viewer.cam)
-
-    def set_xyz_action(self, action):
-        action[:3] = np.clip(action[:3], -1, 1)
-        pos_delta = action[:3] * self.action_scale
-        new_mocap_pos = self.data.mocap_pos + pos_delta[None]
-        new_mocap_pos[0, :] = np.clip(
-            new_mocap_pos[0, :],
-            self.mocap_low,
-            self.mocap_high,
-        )
-        self.data.set_mocap_pos('mocap', new_mocap_pos)
-        # quat = euler2quat(action[3:])
-        rot_axis = action[4:] / np.linalg.norm(action[4:])
-        # replace this with learned rotation
-        self.data.set_mocap_quat('mocap', np.array([np.cos(action[3]/2), np.sin(action[3]/2)*rot_axis[0], np.sin(action[3]/2)*rot_axis[1], np.sin(action[3]/2)*rot_axis[2]]))
-        # self.data.set_mocap_quat('mocap', np.array([1, 0, 1, 0]))
-        # self.data.set_mocap_quat('mocap', quat)
-
-    def step(self, action):
-        # self.render()
-        delta_z = self.fixed_hand_z - self.data.mocap_pos[0, 2]
-        xyz_action = np.hstack((action[:2], delta_z, action[2:]))
-        self.set_xyz_action(xyz_action)
-        u = np.zeros(8)
-        u[7] = 1
-        self.do_simulation(u, self.frame_skip)
-        info = self._get_info()
-        ob = self._get_obs()
-        ob_dict = self._get_obs_dict()
-        reward = self.compute_reward(action, ob_dict)
-        done = False
-        return ob, reward, done, info
-
-    def _get_obs(self):
-        pos = self.get_endeff_pos()
-        angle = self.get_door_angle()
-        # flat_obs = np.concatenate((pos, angle))
-        flat_obs = np.concatenate((pos, [angle, 0, 0], [self._state_goal[-1], 0, 0]))
-        return flat_obs
-
-    def _get_obs_dict(self):
-        pos = self.get_endeff_pos()
-        angle = self.get_door_angle()
-        flat_obs = np.concatenate((pos, angle))
-        return dict(
-            observation=flat_obs,
-            desired_goal=self._state_goal,
-            achieved_goal=flat_obs,
-            state_observation=flat_obs,
-            state_desired_goal=self._state_goal,
-            state_achieved_goal=flat_obs,
-        )
-
-    def _get_info(self):
-        angle_diff = np.abs(self.get_door_angle() - self._state_goal[-1])[0]
-        hand_dist = np.linalg.norm(self.get_endeff_pos() - self._state_goal[:3])
-        info = dict(
-            angle_difference=angle_diff,
-            angle_success=(angle_diff < self.indicator_threshold[0]).astype(
-                float),
-            hand_distance=hand_dist,
-            hand_success=(hand_dist < self.indicator_threshold[1]).astype(
-                float),
-            total_distance=angle_diff + hand_dist
-        )
-        return info
-
-    def get_door_angle(self):
-        return np.array([self.data.get_joint_qpos('doorjoint')])
-
-    @property
-    def endeff_id(self):
-        return self.model.body_names.index('leftclaw')
-
-    def compute_rewards(self, actions, obs):
-        achieved_goals = obs['state_achieved_goal']
-        desired_goals = obs['state_desired_goal']
-        actual_angle = achieved_goals[:, -1]
-        goal_angle = desired_goals[:, -1]
-        pos = achieved_goals[:, :3]
-        goal_pos = desired_goals[:, :3]
-        angle_diff = np.abs(actual_angle - goal_angle)
-        pos_dist = np.linalg.norm(pos - goal_pos, axis=1)
-        if self.reward_type == 'angle_diff_and_hand_distance':
-            r = - (
-                angle_diff * self.target_angle_scale
-                + pos_dist * self.target_pos_scale
-            )
-        elif self.reward_type == 'angle_difference':
-            r = - angle_diff * self.target_angle_scale
-
-        elif self.reward_type == 'hand_success':
-            r = -(angle_diff > self.indicator_threshold[0] or pos_dist >
-                  self.indicator_threshold[1]).astype(float)
-        else:
-            raise NotImplementedError("Invalid/no reward type.")
-        return r
-
-    def reset_model(self):
-        if not self.reset_free:
-            self._reset_hand()
-            self._set_door_pos(0)
-        goal = self.sample_goal()
-        self.set_goal(goal)
-        self.reset_mocap_welds()
-        return self._get_obs()
-
-    def reset(self):
-        # super.reset() does not account for reset-free logic.
-        ob = self.reset_model()
-        if self.viewer is not None:
-            self.viewer_setup()
-        return ob
-
-    def _reset_hand(self):
-        velocities = self.data.qvel.copy()
-        angles = self.data.qpos.copy()
-        # Do this to make sure the robot isn't in some weird configuration.
-        angles[:7] = self.init_arm_angles
-        self.set_state(angles.flatten(), velocities.flatten())
-        for _ in range(10):
-            self.data.set_mocap_pos('mocap', np.array([0, 0.5, 0.02]))
-            self.data.set_mocap_quat('mocap', np.array([1, 0, 1, 0]))
-            self.do_simulation(None, self.frame_skip)
-    @property
-    def init_arm_angles(self):
-        return [1.78026069e+00, - 6.84415781e-01, - 1.54549231e-01,
-                2.30672090e+00, 1.93111471e+00,  1.27854012e-01,
-                1.49353907e+00]
-
-    def _set_door_pos(self, pos):
-        qpos = self.data.qpos.copy()
-        qvel = self.data.qvel.copy()
-        qpos[self.door_angle_idx] = pos
-        qvel[self.door_angle_idx] = 0
-        self.set_state(qpos.flatten(), qvel.flatten())
-
-    ''' Multitask Functions '''
-
-    @property
-    def goal_dim(self):
-        return 4
-
-    def set_goal(self, goal):
-        self._state_goal = goal['state_desired_goal']
-
-    def sample_goals(self, batch_size):
-        if self.fix_goal:
-            goals = np.repeat(
-                self.fixed_goal.copy()[None],
-                batch_size,
-                0
-            )
-        else:
-            goals = np.random.uniform(
-                self.goal_space.low,
-                self.goal_space.high,
-                size=(batch_size, self.goal_space.low.size),
-            )
-        # This only works for 2D control
-        goals[:, 2] = self.fixed_hand_z
-        return {
-            'desired_goal': goals,
-            'state_desired_goal': goals,
-        }
-
-    def set_to_goal_angle(self, angle):
-        self._state_goal = angle.copy()
-        qpos = self.data.qpos.flat.copy()
-        qvel = self.data.qvel.flat.copy()
-        qpos[-1] = angle.copy()
-        qvel[-1] = 0
-        self.set_state(qpos, qvel)
-
-    def set_to_goal_pos(self, xyz):
-        for _ in range(10):
-            self.data.set_mocap_pos('mocap', np.array(xyz))
-            self.data.set_mocap_quat('mocap', np.array([1, 0, 1, 0]))
-            u = np.zeros(7)
-            self.do_simulation(u, self.frame_skip)
 
     def get_goal(self):
         return {
-            'desired_goal': self._state_goal,
             'state_desired_goal': self._state_goal,
+    }
+
+    @property
+    def model_name(self):     
+
+        return get_asset_full_path('sawyer_xyz/sawyer_lever_pull.xml')
+        #return get_asset_full_path('sawyer_xyz/pickPlace_fox.xml')
+
+    def viewer_setup(self):
+        # top view
+        # self.viewer.cam.trackbodyid = 0
+        # self.viewer.cam.lookat[0] = 0
+        # self.viewer.cam.lookat[1] = 1.0
+        # self.viewer.cam.lookat[2] = 0.5
+        # self.viewer.cam.distance = 0.6
+        # self.viewer.cam.elevation = -45
+        # self.viewer.cam.azimuth = 270
+        # self.viewer.cam.trackbodyid = -1
+        # side view
+        self.viewer.cam.trackbodyid = 0
+        self.viewer.cam.lookat[0] = 0.4
+        self.viewer.cam.lookat[1] = 0.75
+        self.viewer.cam.lookat[2] = 0.4
+        self.viewer.cam.distance = 0.4
+        self.viewer.cam.elevation = -55
+        self.viewer.cam.azimuth = 180
+        self.viewer.cam.trackbodyid = -1
+        # self.viewer.cam.trackbodyid = 0
+        # self.viewer.cam.lookat[0] = 0
+        # self.viewer.cam.lookat[1] = 0.4
+        # self.viewer.cam.lookat[2] = 0.4
+        # self.viewer.cam.distance = 0.4
+        # self.viewer.cam.elevation = -55
+        # self.viewer.cam.azimuth = 90
+        # self.viewer.cam.trackbodyid = -1
+
+    def step(self, action):
+        # self.render()
+        # self.set_xyz_action_rot(action[:7])
+        if self.rotMode == 'euler':
+            action_ = np.zeros(7)
+            action_[:3] = action[:3]
+            action_[3:] = euler2quat(action[3:6])
+            self.set_xyz_action_rot(action_)
+        elif self.rotMode == 'fixed':
+            self.set_xyz_action(action[:3])
+        elif self.rotMode == 'rotz':
+            self.set_xyz_action_rotz(action[:4])
+        else:
+            self.set_xyz_action_rot(action[:7])
+        self.do_simulation([action[-1], -action[-1]])
+        # The marker seems to get reset every time you do a simulation
+        ob = self._get_obs()
+        obs_dict = self._get_obs_dict()
+        reward, reachDist, pressDist = self.compute_reward(action, obs_dict)
+        self.curr_path_length +=1
+        if self.curr_path_length == self.max_path_length:
+            done = True
+        else:
+            done = False
+        return ob, reward, done, {'reachDist': reachDist, 'goalDist': pressDist, 'epRew': reward, 'pickRew':None}
+   
+
+    def get_button_angle(self):
+        return np.array([self.data.get_joint_qpos('buttonjoint')])
+
+    def get_mocap_quat(self):
+        return self.data.get_mocap_quat('mocap')
+
+    def _get_obs(self):
+        hand = self.get_endeff_pos()
+        angle = self.get_button_angle()
+        # flat_obs = np.concatenate((hand, objPos))
+        # if self.multitask:
+        #     assert hasattr(self, '_state_goal_idx')
+        #     return np.concatenate([
+        #             flat_obs,
+        #             self._state_goal_idx
+        #         ])
+        return np.hstack([
+                hand,
+                self._state_goal,
+                angle,
+                self._state_goal_idx
+            ])
+
+    def _get_obs_dict(self):
+        hand = self.get_endeff_pos()
+        objPos =  self.data.site_xpos[self.model.site_name2id('buttonStart')]
+        flat_obs = np.concatenate((hand, objPos))
+        return dict(
+            state_observation=flat_obs,
+            state_desired_goal=self._state_goal,
+            state_achieved_goal=objPos,
+        )
+
+    def _get_info(self):
+        pass
+
+    def _set_objCOM_marker(self):
+        """
+        This should be use ONLY for visualization. Use self._state_goal for
+        logging, learning, etc.
+        """
+        objPos =  self.data.get_geom_xpos('handle')
+        self.data.site_xpos[self.model.site_name2id('objSite')] = (
+            objPos
+        )
+    
+
+    def _set_obj_xyz_quat(self, pos, angle):
+        quat = Quaternion(axis = [0,0,1], angle = angle).elements
+        qpos = self.data.qpos.flat.copy()
+        qvel = self.data.qvel.flat.copy()
+        qpos[9:12] = pos.copy()
+        qpos[12:16] = quat.copy()
+        qvel[9:15] = 0
+        self.set_state(qpos, qvel)
+
+    def _set_obj_xyz(self, pos):
+        qpos = self.data.qpos.flat.copy()
+        qvel = self.data.qvel.flat.copy()
+        qpos[9] = pos
+        qvel[9] = 0
+        self.set_state(qpos, qvel)
+
+
+    def sample_goals(self, batch_size):
+        #Required by HER-TD3
+        goals = []
+        for i in range(batch_size):
+            task = self.tasks[np.random.randint(0, self.num_tasks)]
+            goals.append(task['goal'])
+        return {
+            'state_desired_goal': goals,
         }
 
-    def set_to_goal(self, goal):
-        raise NotImplementedError("Hard to do because what if the hand is in "
-                                  "the door? Use presampled goals.")
+
+    def sample_task(self):
+        task_idx = np.random.randint(0, self.num_tasks)
+        return self.tasks[task_idx]
+
+
+    def reset_model(self):
+        self._reset_hand()
+        task = self.sample_task()
+        self._state_goal = np.array(task['goal'])
+        self.obj_init_pos = task['obj_init_pos']
+        # self.obj_init_qpos = task['obj_init_qpos']
+        if self.random_init:
+            goal_pos = np.random.uniform(
+                self.obj_and_goal_space.low,
+                self.obj_and_goal_space.high,
+                size=(self.obj_and_goal_space.low.size),
+            )
+            # self.obj_init_qpos = goal_pos[-1]
+            self.obj_init_pos = goal_pos
+            button_pos = goal_pos.copy()
+            button_pos[1] += 0.08
+            button_pos[2] += 0.07
+            self._state_goal = button_pos
+            self._state_goal[2] -= 0.02
+        # self._set_obj_xyz(self.obj_init_qpos)
+        # self.sim.model.body_pos[self.model.body_name2id('box')] = self.obj_init_pos
+        # print(button_pos)
+            self.sim.model.body_pos[self.model.body_name2id('button')] = button_pos
+        self.curr_path_length = 0
+        self.maxDist = np.abs(self.data.site_xpos[self.model.site_name2id('buttonStart')][2] - self._state_goal[2])
+        #Can try changing this
+        return self._get_obs()
+
+    def _reset_hand(self):
+        for _ in range(10):
+            self.data.set_mocap_pos('mocap', self.hand_init_pos)
+            self.data.set_mocap_quat('mocap', np.array([1, 0, 1, 0]))
+            self.do_simulation([-1,1], self.frame_skip)
+            #self.do_simulation(None, self.frame_skip)
+        rightFinger, leftFinger = self.get_site_pos('rightEndEffector'), self.get_site_pos('leftEndEffector')
+        self.init_fingerCOM  =  (rightFinger + leftFinger)/2
+        self.pickCompleted = False
+
+    def get_site_pos(self, siteName):
+        _id = self.model.site_names.index(siteName)
+        return self.data.site_xpos[_id].copy()
+
+    def compute_rewards(self, actions, obsBatch):
+        #Required by HER-TD3
+        assert isinstance(obsBatch, dict) == True
+        obsList = obsBatch['state_observation']
+        rewards = [self.compute_reward(action, obs)[0] for  action, obs in zip(actions, obsList)]
+        return np.array(rewards)
+
+    def compute_reward(self, actions, obs):
+        if isinstance(obs, dict): 
+            obs = obs['state_observation']
+
+        objPos = obs[3:6]
+
+        rightFinger, leftFinger = self.get_site_pos('rightEndEffector'), self.get_site_pos('leftEndEffector')
+        fingerCOM  =  (rightFinger + leftFinger)/2
+
+        pressGoal = self._state_goal[2]
+
+        pressDist = np.abs(objPos[2] - pressGoal)
+        reachDist = np.linalg.norm(objPos - fingerCOM)
+        reachDistxy = np.linalg.norm(objPos[:-1] - fingerCOM[:-1])
+        reachDistxyz = np.linalg.norm(np.concatenate((objPos[:-1], [self.init_fingerCOM[-1]])) - fingerCOM)
+        # if reachDistxy < 0.05:
+        #     reachRew = -reachDist
+        # else:
+        #     reachRew =  -reachDistxyz
+        # reachRew += max(actions[-1],0)/50
+        reachRew = -reachDist
+        # reward = reachRew -pressDist*2
+        c1 = 1000 ; c2 = 0.01 ; c3 = 0.001
+        if reachDist < 0.05:
+            # pressRew = -pressDist
+            pressRew = 1000*(self.maxDist - pressDist) + c1*(np.exp(-(pressDist**2)/c2) + np.exp(-(pressDist**2)/c3))
+        else:
+            pressRew = 0
+        reward = reachRew + pressRew
+
+        return [reward, reachDist, pressDist] 
 
     def get_diagnostics(self, paths, prefix=''):
         statistics = OrderedDict()
-        for stat_name in [
-            'angle_difference',
-            'angle_success',
-            'hand_distance',
-            'hand_success',
-            'total_distance',
-        ]:
-            stat_name = stat_name
-            stat = get_stat_in_paths(paths, 'env_infos', stat_name)
-            statistics.update(create_stats_ordered_dict(
-                '%s%s' % (prefix, stat_name),
-                stat,
-                always_show_all_stats=True,
-            ))
-            statistics.update(create_stats_ordered_dict(
-                'Final %s%s' % (prefix, stat_name),
-                [s[-1] for s in stat],
-                always_show_all_stats=True,
-            ))
         return statistics
 
-    def get_env_state(self):
-        base_state = super().get_env_state()
-        goal = self._state_goal.copy()
-        return base_state, goal
-
-    def set_env_state(self, state):
-        base_state, goal = state
-        super().set_env_state(base_state)
-        self._state_goal = goal
+    def log_diagnostics(self, paths = None, logger = None):
+        pass
 
 if __name__ == '__main__':
     import time
     env = SawyerLeverPull6DOFEnv()
-    for _ in range(1000000):
-        env.render()
-        time.sleep(0.05)
+    for _ in range(1000):
+        env.reset()
+        # for _ in range(10):
+        #     env.data.set_mocap_pos('mocap', np.array([0, 0.8, 0.05]))
+        #     env.data.set_mocap_quat('mocap', np.array([1, 0, 1, 0]))
+        #     env.do_simulation([-1,1], env.frame_skip)
+        #     #self.do_simulation(None, self.frame_skip)
+        # for _ in range(10):
+        #     env.data.set_mocap_pos('mocap', np.array([0, 0.8, 0.25]))
+        #     # env.data.set_mocap_pos('mocap', np.array([0, 0.6, 0.25]))
+        #     env.data.set_mocap_quat('mocap', np.array([1, 0, 1, 0]))
+        #     env.do_simulation([-1,1], env.frame_skip)
+        #     #self.do_simulation(None, self.frame_skip)
+        for _ in range(100):
+            # print(env.data.site_xpos[env.model.site_name2id('buttonStart')])
+            env.render()
+            # env.step(env.action_space.sample())
+            # if _ < 10:
+            #     env.step(np.array([0, 0, -1, 0, 0]))
+            # elif _ < 50:
+            #     env.step(np.array([0, 0, 0, 0, 1]))
+                # env.step(np.array([0, 1, 0, 0, 1]))
+                # env.step(np.array([0, 1, 0, 0, 0]))
+            env.step(np.array([0, 0, -1, 0, 1]))
+            # env.step(np.array([np.random.uniform(low=-1., high=1.), np.random.uniform(low=-1., high=1.), 0.]))
+            time.sleep(0.05)

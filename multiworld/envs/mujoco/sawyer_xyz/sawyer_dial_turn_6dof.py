@@ -10,8 +10,9 @@ from multiworld.envs.mujoco.sawyer_xyz.base import SawyerXYZEnv
 
 from pyquaternion import Quaternion
 from multiworld.envs.mujoco.utils.rotation import euler2quat
+import pdb
 
-class SawyerButtonPressTopdown6DOFEnv(SawyerXYZEnv):
+class SawyerDialTurn6DOFEnv(SawyerXYZEnv):
     def __init__(
             self,
             hand_low=(-0.5, 0.40, 0.05),
@@ -169,6 +170,9 @@ class SawyerButtonPressTopdown6DOFEnv(SawyerXYZEnv):
     def get_button_angle(self):
         return np.array([self.data.get_joint_qpos('buttonjoint')])
 
+    def get_mocap_quat(self):
+        return self.data.get_mocap_quat('mocap')
+
     def _get_obs(self):
         hand = self.get_endeff_pos()
         angle = self.get_button_angle()
@@ -179,7 +183,6 @@ class SawyerButtonPressTopdown6DOFEnv(SawyerXYZEnv):
         #             flat_obs,
         #             self._state_goal_idx
         #         ])
-        print('angle', angle)
         return np.hstack([
                 hand,
                 self._state_goal,
