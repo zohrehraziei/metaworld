@@ -1,0 +1,19 @@
+<mujoco model="hinge">
+	<include file="shared_config.xml"/>
+	<worldbody >
+		<include file="sawyer_xyz_base_no_table.xml"/>
+		<body axisangle="0 0 1 6.07004429848192" name="box" pos="0 0.6 0.07">
+			<inertial diaginertia="1 1 1" mass="1" pos="0 0 0"/>
+			<geom rgba="0.3 1 0.3 1" name="base_obj" size="0.07 0.07 0.07" type="box" contype="1" pos="0 0 0" conaffinity="1"/>
+		</body>
+		<body axisangle="0 0 1 6.07004429848192" name="box2" pos="0 0.6 0.07">
+			<inertial diaginertia="1e-6 1e-6 1e-6" mass="1" pos="0 0 0"/>
+			<geom rgba="0.3 .3 1 1" name="target_obj" size="0.02 0.09 0.09" type="box" contype="1" pos="-0.11000000000000001 0 0" conaffinity="1"/>
+			<joint name="hinge" range="-3 3" axis="0 0 1" armature="0" pos="0 -0.07 0" damping=".001"/>
+		</body>
+	</worldbody>
+	<actuator >
+		<position ctrlrange="-1 1" joint="r_close" ctrllimited="true" kp="400" user="1"/>
+		<position ctrlrange="-1 1" joint="l_close" ctrllimited="true" kp="400" user="1"/>
+	</actuator>
+</mujoco>

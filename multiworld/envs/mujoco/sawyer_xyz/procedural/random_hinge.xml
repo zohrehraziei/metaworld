@@ -1,0 +1,10 @@
+<mujoco model="hinge">
+	<include file="shared_config.xml"/>
+	<worldbody >
+		<include file="sawyer_xyz_base_no_table.xml"/>
+		<body name="box" pos="0 0 0.25">
+			<inertial mass="1" pos="0 0 0" diaginertia="16.667 16.667 16.667"/>
+			<geom size=".1 .03 .03" type="box" conaffinity="0" contype="0" rgba="0.5 0.5 0.5 1" axisangle="0 0 1 2." />
+		</body>
+	</worldbody>
+</mujoco>
