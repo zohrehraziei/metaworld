@@ -344,6 +344,26 @@ def register_custom_envs():
 
     )
 
+    # register(
+    #     id='ProceduralMultitaskEnv-v0',
+    #     entry_point='multiworld.envs.mujoco.'
+    #                 'procedural_multitask_env:ProceduralMultitaskEnv',
+    #     tags={
+    #         'git-commit-hash': '30f23f7',
+    #         'author': 'deirdre',
+    #     },
+    # )
+
+    # register(
+    #     id='HingeEnv-v0',
+    #     entry_point='multiworld.envs.mujoco.sawyer_xyz.'
+    #                 'procedural.random_hinges:HingeEnv',
+    #     tags={
+    #         'git-commit-hash': '30f23f7',
+    #         'author': 'deirdre',
+    #     },
+    # )
+
 
 def create_image_48_sawyer_reach_xy_env_v1():
     from multiworld.core.image_env import ImageEnv

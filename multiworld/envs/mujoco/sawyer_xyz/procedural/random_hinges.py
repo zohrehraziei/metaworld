@@ -12,7 +12,7 @@ class DoorSide():
         """
         idx : must be 0, or 1
         sign: must be -1 or 1
-        hinge_idx: must be 
+        hinge_sign: must be -1 or 1 
         """ 
         self.idx = idx
         self.sign = sign
@@ -65,8 +65,9 @@ def hinge(door_side):
     box2_pos = [0, 0, 0]
 
     sign = door_side.sign
-    box2_pos[idx] = box1_pos[idx] + sign*(.02 + box1_size[idx] + box2_size[idx])
-
+    # box2_pos[idx] = box1_pos[idx] + sign*(.02 + box1_size[idx] + box2_size[idx])
+    box2_pos[idx] = sign*(.02 + box1_size[idx] + box2_size[idx])
+    
     box2 = worldbody.body(name="box2", pos=box1_pos, axisangle="0 0 1 {}".format(angle))
     box2.inertial(pos="0 0 0", mass="1", diaginertia="1e-6 1e-6 1e-6")
     box2.geom(pos=box2_pos, name="target_obj", type="box", size="{} {} {}".format(box2_size[0], box2_size[1], box2_size[2]), rgba="0.3 .3 1 1", contype="1", conaffinity="1")
@@ -79,20 +80,25 @@ def hinge(door_side):
 class HingeEnv(SawyerXYZEnv):
 
     def __init__(self,
-        door_side,
+        door_side=None,
         rotMode='rotz',
         hand_low=(-0.5, 0.40, 0.05),
         hand_high=(0.5, 1, 0.5),
+        num_tasks=None,
+        task_idx=None,
         # Todo: maybe make these types safe.
         **kwargs):
         self.rotMode = rotMode
         self.hand_init_pos = np.array([0, 0.6, 0.2])
-        self._state_goal = 0
         self.max_path_length = 1000
+        self._state_goal_idx = None
+        self.num_tasks = num_tasks
 
+        if door_side == None:
+            door_side = DoorSide(0, 1, 1)
         model = hinge(door_side)
         with model.asfile() as f:
-            with open("/Users/deirdrequillen/metaworld/multiworld/envs/assets/sawyer_xyz/random_hinge.xml", "w") as new:
+            with open("/home/deirdre/metaworld/multiworld/envs/assets/sawyer_xyz/random_hinge.xml", "w") as new:
                 new.write(f.read())
 
         SawyerXYZEnv.__init__(
@@ -101,7 +107,7 @@ class HingeEnv(SawyerXYZEnv):
             action_scale=1./100,
             hand_low=hand_low,
             hand_high=hand_high,
-            model_name="/Users/deirdrequillen/metaworld/multiworld/envs/assets/sawyer_xyz/random_hinge.xml",
+            model_name="/home/deirdre/metaworld/multiworld/envs/assets/sawyer_xyz/random_hinge.xml",
             **kwargs
         )
 
@@ -134,12 +140,21 @@ class HingeEnv(SawyerXYZEnv):
                 np.array([1, 1, 1, np.pi/2, np.pi/2, np.pi*2, 1]),
             )
 
-        self.observation_space = Box(
-            np.hstack((hand_low, 0)),
-            np.hstack((hand_high, 2*np.pi)),
-        )
+        if num_tasks is None:
+            self.observation_space = Box(
+                np.hstack((hand_low, hand_low)),
+                np.hstack((hand_high, hand_high)),
+            )
+        else:
+            self.task_idx = task_idx
+
+            self.observation_space = Box(
+                np.hstack((hand_low, hand_low, np.zeros(num_tasks))),
+                np.hstack((hand_high, hand_high, np.ones(num_tasks))),
+            )            
 
     def step(self, action):
+        self.render()
         if self.rotMode == 'euler':
             action_ = np.zeros(7)
             action_[:3] = action[:3]
@@ -162,17 +177,21 @@ class HingeEnv(SawyerXYZEnv):
             done = True
         else:
             done = False
-        return obs, reward, done, None
+        return obs, reward, done, {}
    
     def _get_obs(self):
         hand = self.get_endeff_pos()
         objPos =  self.data.get_geom_xpos('target_obj')
-        flat_obs = np.concatenate((hand, objPos))
-        # print(self.get_angle())
-        return np.hstack([
-            flat_obs,
-            self._state_goal
-        ])
+        if self.num_tasks is None:
+            return np.hstack([
+                np.concatenate((hand, objPos))
+            ])
+        else:
+            return np.hstack([
+                hand,
+                objPos,
+                self.task_idx
+            ])
 
     def get_site_pos(self, siteName):
         _id = self.model.site_names.index(siteName)
@@ -205,7 +224,7 @@ class HingeEnv(SawyerXYZEnv):
 
     def compute_reward(self, actions, obs):
         actual_angle = self.get_angle()
-        return abs(actual_angle)
+        return abs(actual_angle[0])
         # return np.linalg.norm(actual_angle - goal_angle)
 
 if __name__ == '__main__':

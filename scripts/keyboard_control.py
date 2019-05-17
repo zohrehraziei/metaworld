@@ -75,9 +75,9 @@ import pygame
 #     reward_type='state_distance',
 #     reset_free=False,
 # )
-# env = SawyerSweepEnv()
 door_side = DoorSide(0, -1, -1)
 env = HingeEnv(door_side, rotMode = 'rotz')
+
 NDIM = env.action_space.low.size
 lock_action = False
 obs = env.reset()
