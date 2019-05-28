@@ -22,6 +22,7 @@ from multiworld.envs.mujoco.sawyer_xyz.sawyer_stack_6dof import SawyerStack6DOFE
 from multiworld.envs.mujoco.sawyer_xyz.sawyer_dial_turn_6dof import SawyerDialTurn6DOFEnv
 from multiworld.envs.mujoco.sawyer_xyz.sawyer_lever_pull import SawyerLeverPull6DOFEnv
 from multiworld.envs.mujoco.sawyer_xyz.procedural.random_hinges import HingeEnv, DoorSide
+from multiworld.envs.mujoco.sawyer_xyz.sawyer_reach_push_pick_place_6dof import SawyerReachPushPickPlace6DOFEnv
 
 
 
@@ -35,8 +36,10 @@ import gym
 import multiworld
 
 space_mouse = SpaceMouse()
-door_side = DoorSide(0, -1, -1)
-env = HingeEnv(door_side, rotMode = 'rotz')
+# door_side = DoorSide(0, -1, -1)
+# env = HingeEnv(door_side, rotMode = 'rotz')
+
+env = SawyerReachPushPickPlace6DOFEnv()
 NDIM = env.action_space.low.size
 lock_action = False
 obs = env.reset()
@@ -81,5 +84,5 @@ while True:
     obs, reward, done, _ = env.step(np.hstack([dpos/.005, 0, closed]))
     # print(obs)
 
-    if done:
-        obs = env.reset()
+    # if done:
+    #     obs = env.reset()
