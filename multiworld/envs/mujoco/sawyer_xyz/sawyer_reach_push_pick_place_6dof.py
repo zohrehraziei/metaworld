@@ -79,6 +79,7 @@ class SawyerReachPushPickPlace6DOFEnv(SawyerXYZEnv):
         self.if_render = if_render
         self.fix_task = fix_task
         self.task_idx = task_idx
+        self.multitask_task_idx = None
         if rotMode == 'fixed':
             self.action_space = Box(
                 np.array([-1, -1, -1, -1]),
@@ -112,9 +113,13 @@ class SawyerReachPushPickPlace6DOFEnv(SawyerXYZEnv):
             )
         else:
             self.observation_space = Box(
-                    np.hstack((self.hand_low, obj_low, np.zeros(multitask_num))),
-                    np.hstack((self.hand_high, obj_high, np.ones(multitask_num))),
-            )
+                    np.hstack((self.hand_low, obj_low, 0)),
+                    np.hstack((self.hand_high, obj_high, len(tasks))),
+            )     
+            # self.observation_space = Box(
+            #         np.hstack((self.hand_low, obj_low, np.zeros(multitask_num))),
+            #         np.hstack((self.hand_high, obj_high, np.ones(multitask_num))),
+            # )
         self.num_resets = 0
         self.reset()
         # self.observation_space = Dict([
@@ -193,10 +198,11 @@ class SawyerReachPushPickPlace6DOFEnv(SawyerXYZEnv):
         hand = self.get_endeff_pos()
         objPos =  self.data.get_geom_xpos('objGeom')
         flat_obs = np.concatenate((hand, objPos))
-        return np.concatenate([
+        return np.hstack([
                 flat_obs,
                 # self._state_goal
-                self._state_goal_idx
+                self.multitask_task_idx
+                # self._state_goal_idx
             ])
 
     def _get_obs_dict(self):

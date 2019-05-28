@@ -23,15 +23,8 @@ import numpy as np
 # from multiworld.envs.mujoco.sawyer_xyz.sawyer_reach import SawyerReachXYEnv, \
 #     SawyerReachXYZEnv
 
-# from multiworld.envs.mujoco.sawyer_xyz.sawyer_throw import SawyerThrowEnv
-# from multiworld.envs.mujoco.sawyer_xyz.sawyer_hand_insert import SawyerHandInsertEnv
-# from multiworld.envs.mujoco.sawyer_xyz.sawyer_sweep_into_goal import SawyerSweepIntoGoalEnv
 from multiworld.envs.mujoco.sawyer_xyz.procedural.random_hinges import HingeEnv, DoorSide
-
-
-
-
-
+from multiworld.envs.mujoco.multitask_mujoco_env import MultiTaskMujocoEnv
 
 import pygame
 from pygame.locals import QUIT, KEYDOWN
@@ -61,27 +54,18 @@ char_to_action = {
 
 import gym
 import multiworld
-import pygame
-# env = gym.make('SawyerPushAndReachEnvEasy-v0')
-# env = SawyerPushAndReachXYEnv(
-#     goal_low=(-0.15, 0.4, 0.02, -.1, .5),
-#     goal_high=(0.15, 0.75, 0.02, .1, .7),
-#     puck_low=(-.3, .25),
-#     puck_high=(.3, .9),
-#     hand_low=(-0.15, 0.4, 0.05),
-#     hand_high=(0.15, .75, 0.3),
-#     norm_order=2,
-#     xml_path='sawyer_xyz/sawyer_push_puck_small_arena.xml',
-#     reward_type='state_distance',
-#     reset_free=False,
-# )
-door_side = DoorSide(0, -1, -1)
-env = HingeEnv(door_side, rotMode = 'rotz')
+# door_side = DoorSide(0, -1, -1)
+# env = HingeEnv(door_side, rotMode = 'rotz')
+
+# env = SawyerSweepEnv()
+# env = SawyerSweepIntoGoalEnv()
+env = MultiTaskMujocoEnv()
 
 NDIM = env.action_space.low.size
 lock_action = False
 obs = env.reset()
 action = np.zeros(10)
+s = 0
 while True:
     done = False
     if not lock_action:
@@ -112,6 +96,7 @@ while True:
             print(action)
     env.step(action[:5])
     # time.sleep(1)
-    if done:
+    s += 1
+    if done or s == 1000:
         obs = env.reset()
     env.render()

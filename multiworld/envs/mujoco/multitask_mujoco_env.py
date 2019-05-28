@@ -64,6 +64,7 @@ class MultiTaskMujocoEnv(gym.Env):
 			# set the one-hot task representation
 			self.mujoco_envs[i]._state_goal_idx = np.zeros((len(ENV_LIST)))
 			self.mujoco_envs[i]._state_goal_idx[i] = 1.
+			self.mujoco_envs[i].multitask_task_idx = i
 			if adaptive_sampling:
 				self.target_scores.append(self.mujoco_envs[i].target_reward)
 		# TODO: make sure all observation spaces across tasks are the same / use self-attention
@@ -87,6 +88,9 @@ class MultiTaskMujocoEnv(gym.Env):
 			if done:
 				self.scores[self.task_idx].append(reward)
 				# self.scores[self.task_idx].append(self.current_score)
+		# assert ob[-len(ENV_LIST):].argmax() == self.task_idx
+		assert ob[-1:] == self.mujoco_envs[self.task_idx].multitask_task_idx
+		assert ob[-1:] == self.task_idx		
 		return ob, reward, done, info
 
 	def reset(self):
