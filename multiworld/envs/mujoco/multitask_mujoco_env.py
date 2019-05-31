@@ -42,7 +42,9 @@ DEFAULT_SIZE = 500
 # 			SawyerDrawerClose6DOFEnv, SawyerButtonPress6DOFEnv, SawyerButtonPressTopdown6DOFEnv, SawyerPegInsertionSide6DOFEnv]
 # ENV_LIST = [SawyerReachPushPickPlace6DOFEnv, SawyerReachPushPickPlace6DOFEnv, SawyerDrawerOpen6DOFEnv, SawyerDrawerClose6DOFEnv, SawyerButtonPress6DOFEnv, SawyerButtonPressTopdown6DOFEnv]
 # ENV_LIST = [SawyerReachPushPickPlace6DOFEnv, SawyerReachPushPickPlace6DOFEnv, SawyerDrawerClose6DOFEnv, SawyerButtonPress6DOFEnv, SawyerButtonPressTopdown6DOFEnv]
-ENV_LIST = [SawyerReachPushPickPlace6DOFEnv, SawyerReachPushPickPlace6DOFEnv, SawyerReachPushPickPlace6DOFEnv]
+# ENV_LIST = [SawyerReachPushPickPlace6DOFEnv, SawyerReachPushPickPlace6DOFEnv, SawyerReachPushPickPlace6DOFEnv]
+ENV_LIST = [SawyerReachPushPickPlace6DOFEnv]
+
 # ENV_LIST = [SawyerReachPushPickPlace6DOFEnv, SawyerReachPushPickPlace6DOFEnv, SawyerReachPushPickPlace6DOFEnv, SawyerShelfPlace6DOFEnv,
 # 			SawyerDrawerClose6DOFEnv, SawyerButtonPress6DOFEnv, SawyerButtonPressTopdown6DOFEnv, SawyerPegInsertionSide6DOFEnv]
 
