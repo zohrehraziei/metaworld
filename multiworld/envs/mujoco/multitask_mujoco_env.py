@@ -38,16 +38,20 @@ except ImportError as e:
 DEFAULT_SIZE = 500
 # ENV_LIST = [SawyerReachPushPickPlace6DOFEnv, SawyerShelfPlace6DOFEnv, SawyerDrawerOpen6DOFEnv, SawyerDrawerClose6DOFEnv, SawyerButtonPress6DOFEnv,
 # 			SawyerButtonPressTopdown6DOFEnv, SawyerPegInsertionSide6DOFEnv]
-ENV_LIST = [SawyerReachPushPickPlace6DOFEnv, SawyerReachPushPickPlace6DOFEnv, SawyerReachPushPickPlace6DOFEnv, SawyerShelfPlace6DOFEnv, SawyerDrawerOpen6DOFEnv,
-			SawyerDrawerClose6DOFEnv, SawyerButtonPress6DOFEnv, SawyerButtonPressTopdown6DOFEnv, SawyerPegInsertionSide6DOFEnv]
+ENV_LIST = [SawyerReachPushPickPlace6DOFEnv, SawyerReachPushPickPlace6DOFEnv, SawyerReachPushPickPlace6DOFEnv]
+# ENV_LIST = [SawyerReachPushPickPlace6DOFEnv, SawyerReachPushPickPlace6DOFEnv, SawyerReachPushPickPlace6DOFEnv, SawyerShelfPlace6DOFEnv, SawyerDrawerOpen6DOFEnv,
+# 			SawyerDrawerClose6DOFEnv, SawyerButtonPress6DOFEnv, SawyerButtonPressTopdown6DOFEnv, SawyerPegInsertionSide6DOFEnv]
+
+# ENV_LIST = [SawyerReachPushPickPlace6DOFEnv, SawyerReachPushPickPlace6DOFEnv, SawyerReachPushPickPlace6DOFEnv, SawyerShelfPlace6DOFEnv, SawyerDrawerClose6DOFEnv,
+# SawyerButtonPress6DOFEnv, SawyerButtonPressTopdown6DOFEnv, SawyerPegInsertionSide6DOFEnv]
 
 class MultiTaskMujocoEnv(gym.Env):
 	"""
 	An multitask mujoco environment that contains a list of mujoco environments.
 	"""
 	def __init__(self,
-				if_render=False,
-				adaptive_sampling=True):
+				if_render=True,
+				adaptive_sampling=False):
 		self.mujoco_envs = []
 		self.adaptive_sampling = adaptive_sampling
 		if adaptive_sampling:
@@ -88,9 +92,9 @@ class MultiTaskMujocoEnv(gym.Env):
 			if done:
 				self.scores[self.task_idx].append(reward)
 				# self.scores[self.task_idx].append(self.current_score)
-		# assert ob[-len(ENV_LIST):].argmax() == self.task_idx
-		assert ob[-1:] == self.mujoco_envs[self.task_idx].multitask_task_idx
-		assert ob[-1:] == self.task_idx		
+		assert ob[-len(ENV_LIST):].argmax() == self.task_idx
+		# assert ob[-1:] == self.mujoco_envs[self.task_idx].multitask_task_idx
+		# assert ob[-1:] == self.task_idx		
 		return ob, reward, done, info
 
 	def reset(self):

@@ -112,14 +112,14 @@ class SawyerReachPushPickPlace6DOFEnv(SawyerXYZEnv):
                     np.hstack((self.hand_high, obj_high, np.ones(len(tasks)))),
             )
         else:
-            self.observation_space = Box(
-                    np.hstack((self.hand_low, obj_low, 0)),
-                    np.hstack((self.hand_high, obj_high, len(tasks))),
-            )     
             # self.observation_space = Box(
-            #         np.hstack((self.hand_low, obj_low, np.zeros(multitask_num))),
-            #         np.hstack((self.hand_high, obj_high, np.ones(multitask_num))),
-            # )
+            #         np.hstack((self.hand_low, obj_low, 0)),
+            #         np.hstack((self.hand_high, obj_high, len(tasks))),
+            # )     
+            self.observation_space = Box(
+                    np.hstack((self.hand_low, obj_low, np.zeros(multitask_num))),
+                    np.hstack((self.hand_high, obj_high, np.ones(multitask_num))),
+            )
         self.num_resets = 0
         self.reset()
         # self.observation_space = Dict([
@@ -201,8 +201,8 @@ class SawyerReachPushPickPlace6DOFEnv(SawyerXYZEnv):
         return np.hstack([
                 flat_obs,
                 # self._state_goal
-                self.multitask_task_idx
-                # self._state_goal_idx
+                # self.multitask_task_idx
+                self._state_goal_idx
             ])
 
     def _get_obs_dict(self):
