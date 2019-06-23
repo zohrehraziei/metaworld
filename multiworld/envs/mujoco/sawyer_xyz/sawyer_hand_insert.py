@@ -72,7 +72,7 @@ class SawyerHandInsertEnv(SawyerXYZEnv, MultitaskEnv):
         self._set_goal_marker(self._state_goal)
         ob_dict = self._get_obs_dict()
         ob = self._get_obs()
-        reward = self.compute_reward(action, ob_dict)
+        reward = self.compute_reward(action, ob_dict)[0]
         info = self._get_info()
         done = False
         return ob, reward, done, info
