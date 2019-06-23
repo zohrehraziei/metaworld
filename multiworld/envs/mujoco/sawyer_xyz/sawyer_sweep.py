@@ -122,7 +122,8 @@ class SawyerSweepEnv(MultitaskEnv, SawyerXYZEnv):
         ob = self._get_obs()
         ob_dict = self._get_obs_dict()
 
-        reward = self.compute_reward(action, ob_dict)
+        reward = self.compute_reward(action, ob_dict)[0]
+
         info = self._get_info()
         done = False
         return ob, reward, done, info
