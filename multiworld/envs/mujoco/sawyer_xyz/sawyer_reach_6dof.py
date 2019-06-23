@@ -166,24 +166,17 @@ class SawyerReach6DOFEnv(SawyerXYZEnv):
    
     def _get_obs(self):
         hand = self.get_endeff_pos()
-        # make the state vector the same as object manipulation tasks
-        flat_obs = np.concatenate((hand, np.zeros(3)))
-        if self.multitask:
-            assert hasattr(self, '_state_goal_idx')
-            return np.concatenate([
-                    flat_obs,
-                    self._state_goal_idx
-                ])
-        return np.concatenate([
-                flat_obs,
-                # self._state_goal
-                self._state_goal_idx
-            ])
+        objPos = np.zeros(3)
+        flat_obs = np.concatenate((hand, objPos))
+        return flat_obs
 
     def _get_obs_dict(self):
         hand = self.get_endeff_pos()
-        flat_obs = np.concatenate((hand, np.zeros(3)))
+        objPos = np.zeros(3)
+        flat_obs = np.concatenate((hand, objPos))
         return dict(
+            hand=hand,
+            obj=objPos,
             state_observation=flat_obs,
             state_desired_goal=self._state_goal,
             state_achieved_goal=objPos,
@@ -194,24 +187,20 @@ class SawyerReach6DOFEnv(SawyerXYZEnv):
     
     def _set_goal_marker(self, goal):
         """
-        This should be use ONLY for visualization. Use self._state_goal for
+        This should be used ONLY for visualization. Use self._state_goal for
         logging, learning, etc.
         """
-        self.data.site_xpos[self.model.site_name2id('goal_{}'.format(self.task_type))] = (
+        self.data.site_xpos[self.model.site_name2id('goal')] = (
             goal[:3]
         )
-        for task_type in self.task_types:
-            if task_type != self.task_type:
-                self.data.site_xpos[self.model.site_name2id('goal_{}'.format(task_type))] = (
-                    np.array([10.0, 10.0, 10.0])
-                )
+
 
     def _set_objCOM_marker(self):
         """
-        This should be use ONLY for visualization. Use self._state_goal for
+        This should be used ONLY for visualization. Use self._state_goal for
         logging, learning, etc.
         """
-        objPos =  self.data.get_geom_xpos('objGeom')
+        objPos =  self.data.get_geom_xpos('handle')
         self.data.site_xpos[self.model.site_name2id('objSite')] = (
             objPos
         )
@@ -272,7 +261,7 @@ class SawyerReach6DOFEnv(SawyerXYZEnv):
             )
             self._state_goal = goal_pos[:3]
         self._set_goal_marker(self._state_goal)
-        self._set_obj_xyz(self.obj_init_pos)
+        # self._set_obj_xyz(self.obj_init_pos)
         #self._set_obj_xyz_quat(self.obj_init_pos, self.obj_init_angle)
         self.curr_path_length = 0
         self.maxReachDist = np.linalg.norm(self.init_fingerCOM - np.array(self._state_goal))
@@ -308,7 +297,6 @@ class SawyerReach6DOFEnv(SawyerXYZEnv):
         rightFinger, leftFinger = self.get_site_pos('rightEndEffector'), self.get_site_pos('leftEndEffector')
         fingerCOM  =  (rightFinger + leftFinger)/2
 
-        heightTarget = self.heightTarget
         goal = self._state_goal
 
         c1 = 1000 ; c2 = 0.01 ; c3 = 0.001

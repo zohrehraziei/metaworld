@@ -1,3 +1,4 @@
+from akro import Box as AkroBox
 from collections import OrderedDict
 import numpy as np
 from gym.spaces import  Dict , Box
@@ -72,10 +73,18 @@ class SawyerWindowOpen6DOFEnv(TaskBased):
 
 		self.reset()
 
-		self.observation_space = Dict({
-			'hand': self.task_schema.spaces['hand_init_pos'],
-			'obj': self.task_schema.spaces['obj_init_pos'],
-		})
+		# observation_space_dict = AkroDict(Dict({
+		# 	'hand': self.task_schema.spaces['hand_init_pos'],
+		# 	'obj': self.task_schema.spaces['obj_init_pos'],
+		# }))
+
+		hand_lb = self.task_schema.spaces['hand_init_pos'].low
+		hand_ub = self.task_schema.spaces['hand_init_pos'].high
+		obj_lb = self.task_schema.spaces['obj_init_pos'].low
+		obj_ub = self.task_schema.spaces['obj_init_pos'].high
+		obs_space_ub = np.concatenate([hand_ub, obj_ub], axis=-1)
+		obs_space_lb = np.concatenate([hand_lb, obj_lb], axis=-1)
+		self.observation_space = Box(low=obs_space_lb, high=obs_space_ub)
 
 	def get_goal(self):
 		return {
@@ -165,7 +174,7 @@ class SawyerWindowOpen6DOFEnv(TaskBased):
 			done = True
 		else:
 			done = False
-		return obs_dict, reward, done, {'reachDist': reachDist, 'goalDist': pullDist, 'epRew' : reward, 'pickRew':pickrew}
+		return ob, reward, done, {'reachDist': reachDist, 'goalDist': pullDist, 'epRew' : reward, 'pickRew':pickrew}
 
 	def _get_obs(self):
 		hand = self.get_endeff_pos()
@@ -244,7 +253,7 @@ class SawyerWindowOpen6DOFEnv(TaskBased):
 		self.maxPullDist = 0.2
 		self.target_reward = 1000*self.maxPullDist + 1000*2
 		#Can try changing this
-		return self._get_obs_dict()
+		return self._get_obs()
 
 	def _reset_hand(self):
 		for _ in range(10):
