@@ -216,7 +216,7 @@ class SawyerMultiobject6DOFEnv(MujocoEnv, Serializable, MultitaskEnv):
         touch_distances = {}
         object_name = "object_distance"
         object_distance = np.linalg.norm(
-            self.state_goal - self.get_object_pos(self.target_object_idx)
+            self.state_goal[2:] - self.get_object_pos(self.target_object_idx)
         )
         object_distances[object_name] = object_distance
         touch_name = "touch_distance"
@@ -304,6 +304,7 @@ class SawyerMultiobject6DOFEnv(MujocoEnv, Serializable, MultitaskEnv):
             puck = np.array([np.random.uniform(self.puck_goal_low, self.puck_goal_high)])
         else:
             puck = self.fixed_puck_goal.copy()
+            hand = self.fixed_hand_goal.copy()
         return np.hstack((hand, puck))
 
     def sample_puck_xy(self):
@@ -393,11 +394,11 @@ class SawyerMultiobject6DOFEnv(MujocoEnv, Serializable, MultitaskEnv):
         return self._get_obs()
 
     def compute_rewards(self, action, obs, info=None):
-        r = -np.linalg.norm(obs[:, 2+self.target_object_idx*2:2+(self.target_object_idx+1)*2] - self.state_goal, axis=1)
+        r = -np.linalg.norm(obs[:, 2+self.target_object_idx*2:2+(self.target_object_idx+1)*2] - self.state_goal[2:], axis=1)
         return r
 
     def compute_reward(self, action, obs, info=None):
-        r = -np.linalg.norm(obs[2+self.target_object_idx*2:2+(self.target_object_idx+1)*2] - self.state_goal)
+        r = -np.linalg.norm(obs[2+self.target_object_idx*2:2+(self.target_object_idx+1)*2] - self.state_goal[2:])
         r += -np.linalg.norm(obs[2+self.target_object_idx*2:2+(self.target_object_idx+1)*2] - obs[:2])
         return r
 
