@@ -93,8 +93,8 @@ class SawyerShelfPlace6DOFEnv(SawyerXYZEnv):
         self.goal_space = Box(np.array(goal_low), np.array(goal_high))
         if not multitask:
             self.observation_space = Box(
-                    np.hstack((self.hand_low, obj_low, np.zeros(len(tasks)))),
-                    np.hstack((self.hand_high, obj_high, np.ones(len(tasks)))),
+                    np.hstack((self.hand_low, obj_low,)),
+                    np.hstack((self.hand_high, obj_high,)),
             )
         else:
             self.observation_space = Box(
@@ -194,7 +194,7 @@ class SawyerShelfPlace6DOFEnv(SawyerXYZEnv):
                 ])
         return np.concatenate([
                 flat_obs,
-                self._state_goal
+                # self._state_goal
             ])
 
     def _get_obs_dict(self):
@@ -257,7 +257,6 @@ class SawyerShelfPlace6DOFEnv(SawyerXYZEnv):
         return {
             'state_desired_goal': goals,
         }
-
 
     def sample_task(self):
         task_idx = np.random.randint(0, self.num_tasks)
