@@ -25,8 +25,8 @@ class SawyerSweepIntoGoalEnv(MultitaskEnv, SawyerXYZEnv):
 
             fix_goal=True,
             fixed_goal=(0., 0.4, -0.12, 0., 0.4, -0.12),
-            goal_low=(-0.25, 0.3, 0.02, -.2, .4),
-            goal_high=(0.25, 0.875, 0.02, .2, .8),
+            goal_low=(-0.25, 0.3, 0.02, -.2, .4, -0.12),
+            goal_high=(0.25, 0.875, 0.02, .2, .8, -0.12),
 
             hide_goal_markers=False,
             init_puck_z=0.02,
@@ -122,7 +122,7 @@ class SawyerSweepIntoGoalEnv(MultitaskEnv, SawyerXYZEnv):
         ob = self._get_obs()
         ob_dict = self._get_obs_dict()
 
-        reward = self.compute_reward(action, ob_dict)
+        reward = self.compute_reward(action, ob_dict)[0]
         info = self._get_info()
         done = False
         return ob, reward, done, info
