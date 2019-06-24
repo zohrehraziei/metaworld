@@ -90,8 +90,9 @@ class SawyerLeverPull6DOFEnv(SawyerXYZEnv):
         self.goal_space = Box(np.array(goal_low), np.array(goal_high))
         if not multitask:
             self.observation_space = Box(
-                    np.hstack((self.hand_low, obj_low, np.zeros(len(tasks)))),
-                    np.hstack((self.hand_high, obj_high, np.ones(len(tasks)))),
+                low=-np.inf,
+                high=np.inf,
+                shape=self._get_obs().shape,
             )
         else:
             self.observation_space = Box(
@@ -158,14 +159,13 @@ class SawyerLeverPull6DOFEnv(SawyerXYZEnv):
         # The marker seems to get reset every time you do a simulation
         ob = self._get_obs()
         obs_dict = self._get_obs_dict()
-        reward = self.compute_reward(action, obs_dict)
-        print('reward', reward)
+        reward = self.compute_reward(action, obs_dict)[0]
         self.curr_path_length +=1
         if self.curr_path_length == self.max_path_length:
             done = True
         else:
             done = False
-        return ob, reward, done
+        return ob, reward, done, dict()
    
 
     def get_angle(self):
@@ -186,9 +186,7 @@ class SawyerLeverPull6DOFEnv(SawyerXYZEnv):
         #         ])
         return np.hstack([
                 hand,
-                self._state_goal,
                 angle,
-                self._state_goal_idx
             ])
 
     def _get_obs_dict(self):
