@@ -29,6 +29,7 @@ class SawyerReachPushPickPlace6DOFEnv(SawyerXYZEnv):
                     {'goal': np.array([0.1, 0.8, 0.02]),  'obj_init_pos':np.array([0, 0.6, 0.02]), 'obj_init_angle': 0.3, 'type':'push'}], 
             goal_low=(-0.1, 0.8, 0.05),
             goal_high=(0.1, 0.9, 0.3),
+            fix_goal=None,
             hand_init_pos = (0, 0.6, 0.2),
             liftThresh = 0.04,
             sampleMode='equal',
@@ -77,6 +78,7 @@ class SawyerReachPushPickPlace6DOFEnv(SawyerXYZEnv):
         self.multitask_num = multitask_num
         self._state_goal_idx = np.zeros(self.multitask_num)
         self.if_render = if_render
+        self.fix_goal = fix_goal
         self.fix_task = fix_task
         self.task_idx = task_idx
         if rotMode == 'fixed':
@@ -300,6 +302,9 @@ class SawyerReachPushPickPlace6DOFEnv(SawyerXYZEnv):
         self.task_type = task['type']
         # print('task type', self.task_type)
         self._state_goal = np.array(task['goal'])
+
+        if self.fix_goal:
+            self._state_goal = self.fix_goal
         if not self.fix_task:
             if not self.multitask:
                 self._state_goal_idx = np.zeros((len(self.tasks)))
