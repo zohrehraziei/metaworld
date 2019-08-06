@@ -2,7 +2,7 @@ import gym
 import gym.spaces
 import numpy as np
 
-from metaworld.core.multitask_env import MultitaskEnv
+from metaworld.metaworld.core.multitask_env import MultitaskEnv
 
 
 class DiscreteMultitask(MultitaskEnv, gym.Wrapper):

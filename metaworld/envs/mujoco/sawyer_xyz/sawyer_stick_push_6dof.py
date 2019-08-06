@@ -3,14 +3,14 @@ import numpy as np
 from gym.spaces import  Dict , Box
 
 
-from metaworld.envs.env_util import get_stat_in_paths, \
+from metaworld.metaworld.envs.env_util import get_stat_in_paths, \
     create_stats_ordered_dict, get_asset_full_path
-from metaworld.core.multitask_env import MultitaskEnv
-from metaworld.envs.mujoco.sawyer_xyz.base import SawyerXYZEnv
+from metaworld.metaworld.core.multitask_env import MultitaskEnv
+from metaworld.metaworld.envs.mujoco.sawyer_xyz.base import SawyerXYZEnv
 
 from pyquaternion import Quaternion
-from metaworld.envs.mujoco.utils.rotation import euler2quat
-from metaworld.envs.mujoco.sawyer_xyz.base import OBS_TYPE
+from metaworld.metaworld.envs.mujoco.utils.rotation import euler2quat
+from metaworld.metaworld.envs.mujoco.sawyer_xyz.base import OBS_TYPE
 
 class SawyerStickPush6DOFEnv(SawyerXYZEnv):
     def __init__(

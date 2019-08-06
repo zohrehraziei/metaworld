@@ -1,5 +1,5 @@
 import numpy as np
-from metaworld.envs.mujoco.sawyer_xyz.sawyer_door_6dof import SawyerDoor6DOFEnv
+from metaworld.metaworld.envs.mujoco.sawyer_xyz.sawyer_door_6dof import SawyerDoor6DOFEnv
 
 class SawyerDoorClose6DOFEnv(SawyerDoor6DOFEnv):
     def __init__(
