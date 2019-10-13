@@ -40,7 +40,7 @@ class SawyerDialTurnEnv(SawyerXYZEnv):
             **kwargs
         )
         self.init_config = {
-            'obj_init_pos': np.array([0, 0.7, 0.05]),
+            'obj_init_pos': np.array([0, 0.7, 0.]),
             'hand_init_pos': np.array([0, 0.6, 0.2], dtype=np.float32),
         }
         self.goal = np.array([0., 0.73, 0.08])
