@@ -12,6 +12,7 @@ from pyquaternion import Quaternion
 from metaworld.envs.mujoco.utils.rotation import euler2quat
 from metaworld.envs.mujoco.sawyer_xyz.base import OBS_TYPE
 
+
 class SawyerCoffeeButtonEnv(SawyerXYZEnv):
     def __init__(
             self,
@@ -37,7 +38,7 @@ class SawyerCoffeeButtonEnv(SawyerXYZEnv):
             **kwargs
         )
         self.init_config = {
-            'obj_init_pos': np.array([0, 0.9, 0.28]),
+            'obj_init_pos': np.array([0, 0.9, 0.]),
             'obj_init_angle': 0.3,
             'hand_init_pos': np.array([0., .6, .2]),
         }
@@ -182,7 +183,7 @@ class SawyerCoffeeButtonEnv(SawyerXYZEnv):
         This should be use ONLY for visualization. Use self._state_goal for
         logging, learning, etc.
         """
-        objPos =  self.data.get_geom_xpos('objGeom')
+        objPos =  self.data.get_geom_xpos('mug')
         self.data.site_xpos[self.model.site_name2id('objSite')] = (
             objPos
         )
@@ -206,11 +207,11 @@ class SawyerCoffeeButtonEnv(SawyerXYZEnv):
     def adjust_initObjPos(self, orig_init_pos):
         #This is to account for meshes for the geom and object are not aligned
         #If this is not done, the object could be initialized in an extreme position
-        diff = self.get_body_com('obj')[:2] - self.data.get_geom_xpos('objGeom')[:2]
+        diff = self.get_body_com('obj')[:2] - self.data.get_geom_xpos('mug')[:2]
         adjustedPos = orig_init_pos[:2] + diff
 
         #The convention we follow is that body_com[2] is always 0, and geom_pos[2] is the object height
-        # return [adjustedPos[0], adjustedPos[1],self.data.get_geom_xpos('objGeom')[-1]]
+        # return [adjustedPos[0], adjustedPos[1],self.data.get_geom_xpos('mug')[-1]]
         return [adjustedPos[0], adjustedPos[1],self.get_body_com('obj')[-1]]
 
     def reset_model(self):
@@ -218,7 +219,7 @@ class SawyerCoffeeButtonEnv(SawyerXYZEnv):
         self._state_goal = self.goal.copy()
         self.obj_init_pos = self.init_config['obj_init_pos']
         self.obj_init_angle = self.init_config['obj_init_angle']
-        self.objHeight = self.data.get_geom_xpos('objGeom')[2]
+        self.objHeight = self.data.get_geom_xpos('mug')[2]
         obj_pos = self.obj_init_pos + np.array([0, -0.1, -0.28])
         if self.random_init:
             goal_pos = np.random.uniform(
@@ -232,7 +233,7 @@ class SawyerCoffeeButtonEnv(SawyerXYZEnv):
             obj_pos = goal_pos + np.array([0, -0.1, -0.28])
             self._state_goal = button_pos
         self.sim.model.body_pos[self.model.body_name2id('coffee_machine')] = self.obj_init_pos
-        self.sim.model.body_pos[self.model.body_name2id('button')] = self._state_goal
+        self.sim.model.body_pos[self.model.body_name2id('mug')] = self._state_goal
         self._set_obj_xyz(obj_pos)
         self._state_goal = self.get_site_pos('coffee_goal')
         self.curr_path_length = 0
