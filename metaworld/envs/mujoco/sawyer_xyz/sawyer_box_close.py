@@ -1,25 +1,22 @@
 from collections import OrderedDict
-import numpy as np
 from gym.spaces import  Dict , Box
-
+import numpy as np
+from pyquaternion import Quaternion
 
 from metaworld.envs.env_util import get_stat_in_paths, \
     create_stats_ordered_dict, get_asset_full_path
-from metaworld.core.multitask_env import MultitaskEnv
 from metaworld.envs.mujoco.sawyer_xyz.base import SawyerXYZEnv
-
-from pyquaternion import Quaternion
 from metaworld.envs.mujoco.utils.rotation import euler2quat
-
 from metaworld.envs.mujoco.sawyer_xyz.base import OBS_TYPE
+
 
 class SawyerBoxCloseEnv(SawyerXYZEnv):
     def __init__(
             self,
-            random_init=True,
+            random_init=False,
             obs_type='with_goal',
-            goal_low=(-0.1, 0.85, 0.133),
-            goal_high=(0.1, 0.95, 0.133),
+            goal_low=(-0.1, 0.1, 0.133),
+            goal_high=(0.1, 0.15, 0.133),
             liftThresh = 0.12,
             rotMode='fixed',
             rewMode='orig',
@@ -45,7 +42,7 @@ class SawyerBoxCloseEnv(SawyerXYZEnv):
             'obj_init_pos': np.array([0, 0.6, 0.02], dtype=np.float32),
             'hand_init_pos': np.array((0, 0.6, 0.2), dtype=np.float32),
         }
-        self.goal = np.array([0.0, 0.9, 0.133])
+        self.goal = np.array([0.0, 0.1, 0.133])
         self.obj_init_pos = self.init_config['obj_init_pos']
         self.obj_init_angle = self.init_config['obj_init_angle']
         self.hand_init_pos = self.init_config['hand_init_pos']

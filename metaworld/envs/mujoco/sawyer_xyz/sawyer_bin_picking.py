@@ -15,7 +15,6 @@ from metaworld.envs.mujoco.sawyer_xyz.base import OBS_TYPE
 
 
 # TODO: this environment need a goal_high and goal_low
-
 class SawyerBinPickingEnv(SawyerXYZEnv):
     def __init__(
             self,
@@ -144,7 +143,7 @@ class SawyerBinPickingEnv(SawyerXYZEnv):
 
     def _get_obs(self):
         hand = self.get_endeff_pos()
-        objPos =  self.data.get_geom_xpos('objGeom')
+        objPos =  self.data.get_geom_xpos('obj_geom')
         flat_obs = np.concatenate((hand, objPos))
         if self.obs_type == 'with_goal_and_id':
             return np.concatenate([
@@ -164,7 +163,7 @@ class SawyerBinPickingEnv(SawyerXYZEnv):
 
     def _get_obs_dict(self):
         hand = self.get_endeff_pos()
-        objPos =  self.data.get_geom_xpos('objGeom')
+        objPos =  self.data.get_geom_xpos('obj_geom')
         flat_obs = np.concatenate((hand, objPos))
         return dict(
             state_observation=flat_obs,
@@ -187,7 +186,7 @@ class SawyerBinPickingEnv(SawyerXYZEnv):
         This should be use ONLY for visualization. Use self._state_goal for
         logging, learning, etc.
         """
-        objPos =  self.data.get_geom_xpos('objGeom')
+        objPos =  self.data.get_geom_xpos('obj_geom')
         self.data.site_xpos[self.model.site_name2id('obj')] = (
             objPos
         )
@@ -213,18 +212,18 @@ class SawyerBinPickingEnv(SawyerXYZEnv):
     def adjust_initObjPos(self, orig_init_pos):
         #This is to account for meshes for the geom and object are not aligned
         #If this is not done, the object could be initialized in an extreme position
-        diff = self.get_body_com('obj')[:2] - self.data.get_geom_xpos('objGeom')[:2]
+        diff = self.get_body_com('obj')[:2] - self.data.get_geom_xpos('obj_geom')[:2]
         adjustedPos = orig_init_pos[:2] + diff
 
         #The convention we follow is that body_com[2] is always 0, and geom_pos[2] is the object height
-        return [adjustedPos[0], adjustedPos[1],self.data.get_geom_xpos('objGeom')[-1]]
+        return [adjustedPos[0], adjustedPos[1],self.data.get_geom_xpos('obj_geom')[-1]]
 
     def reset_model(self):
         self._reset_hand()
         self._state_goal = self.goal.copy()
         self.obj_init_pos = self.adjust_initObjPos(self.init_config['obj_init_pos'])
         self.obj_init_angle = self.init_config['obj_init_angle']
-        self.objHeight = self.data.get_geom_xpos('objGeom')[2]
+        self.objHeight = self.data.get_geom_xpos('obj_geom')[2]
         self.heightTarget = self.objHeight + self.liftThresh
         if self.random_init:
             self.obj_init_pos = np.random.uniform(np.array([-0.22, -0.02]),
