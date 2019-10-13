@@ -134,7 +134,7 @@ class SawyerNutAssemblyEnv(SawyerXYZEnv):
 
     def _get_obs(self):
         hand = self.get_endeff_pos()
-        graspPos =  self.data.get_geom_xpos('RoundNut-8')
+        graspPos =  self.data.get_site_xpos('RoundNut-8')
         # objPos = self.get_body_com('RoundNut')
         # flat_obs = np.concatenate((hand, graspPos, objPos))
         flat_obs = np.concatenate((hand, graspPos))
@@ -156,7 +156,7 @@ class SawyerNutAssemblyEnv(SawyerXYZEnv):
 
     def _get_obs_dict(self):
         hand = self.get_endeff_pos()
-        graspPos =  self.data.get_geom_xpos('RoundNut-8')
+        graspPos =  self.data.get_site_xpos('RoundNut-8')
         objPos = self.get_body_com('RoundNut')
         # flat_obs = np.concatenate((hand, graspPos, objPos))
         flat_obs = np.concatenate((hand, graspPos))
@@ -174,7 +174,7 @@ class SawyerNutAssemblyEnv(SawyerXYZEnv):
         This should be use ONLY for visualization. Use self._state_goal for
         logging, learning, etc.
         """
-        objPos =  self.data.get_geom_xpos('RoundNut-8')
+        objPos =  self.data.get_site_xpos('RoundNut-8')
         self.data.site_xpos[self.model.site_name2id('RoundNut')] = (
             objPos
         )
@@ -207,7 +207,7 @@ class SawyerNutAssemblyEnv(SawyerXYZEnv):
     def reset_model(self):
         self._reset_hand()
         self._state_goal = self.goal.copy()
-        self.objHeight = self.data.get_geom_xpos('RoundNut-8')[2]
+        self.objHeight = self.data.get_site_xpos('RoundNut-8')[2]
         self.heightTarget = self.objHeight + self.liftThresh
         if self.random_init:
             goal_pos = np.random.uniform(
