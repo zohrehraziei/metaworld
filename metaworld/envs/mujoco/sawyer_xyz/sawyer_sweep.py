@@ -141,7 +141,7 @@ class SawyerSweepEnv(SawyerXYZEnv):
 
     def _get_obs(self):
         hand = self.get_endeff_pos()
-        objPos =  self.data.get_geom_xpos('objGeom').copy()
+        objPos =  self.data.get_geom_xpos('obj_geom').copy()
         flat_obs = np.concatenate((hand, objPos))
         if self.obs_type == 'with_goal_and_id':
             return np.concatenate([
@@ -162,7 +162,7 @@ class SawyerSweepEnv(SawyerXYZEnv):
     def _get_obs_dict(self):
         hand = self.get_endeff_pos()
         # objPos =  (self.data.get_geom_xpos('handle').copy() + self.data.get_geom_xpos('drawer_wall2').copy()) / 2
-        objPos =  self.data.get_geom_xpos('objGeom').copy()
+        objPos =  self.data.get_geom_xpos('obj_geom').copy()
         flat_obs = np.concatenate((hand, objPos))
         return dict(
             state_observation=flat_obs,
@@ -187,7 +187,7 @@ class SawyerSweepEnv(SawyerXYZEnv):
         This should be use ONLY for visualization. Use self._state_goal for
         logging, learning, etc.
         """
-        objPos =  self.data.get_geom_xpos('objGeom')
+        objPos =  self.data.get_geom_xpos('obj_geom')
         self.data.site_xpos[self.model.site_name2id('obj')] = (
             objPos
         )
@@ -201,7 +201,6 @@ class SawyerSweepEnv(SawyerXYZEnv):
         qpos[12:16] = quat.copy()
         qvel[9:15] = 0
         self.set_state(qpos, qvel)
-
 
     def _set_obj_xyz(self, pos):
         qpos = self.data.qpos.flat.copy()
@@ -217,7 +216,7 @@ class SawyerSweepEnv(SawyerXYZEnv):
         self._reset_hand()
         self._state_goal = self.goal.copy()
         self.obj_init_pos = self.init_config['obj_init_pos']
-        self.objHeight = self.data.get_geom_xpos('objGeom')[2]
+        self.objHeight = self.data.get_geom_xpos('obj_geom')[2]
         if self.random_init:
             # self.obj_init_pos = np.random.uniform(-0.2, 0)
             # self._state_goal = np.squeeze(np.random.uniform(
@@ -239,8 +238,8 @@ class SawyerSweepEnv(SawyerXYZEnv):
         #self._set_obj_xyz_quat(self.obj_init_pos, self.obj_init_angle)
         self._set_obj_xyz(self.obj_init_pos)
         self.curr_path_length = 0
-        # self.maxPushDist = np.abs(self.data.get_geom_xpos('objGeom')[-1] - self._state_goal[-1])
-        self.maxPushDist = np.linalg.norm(self.data.get_geom_xpos('objGeom')[:-1] - self._state_goal[:-1])
+        # self.maxPushDist = np.abs(self.data.get_geom_xpos('obj_geom')[-1] - self._state_goal[-1])
+        self.maxPushDist = np.linalg.norm(self.data.get_geom_xpos('obj_geom')[:-1] - self._state_goal[:-1])
         self.target_reward = 1000*self.maxPushDist + 1000*2
         #Can try changing this
         return self._get_obs()
