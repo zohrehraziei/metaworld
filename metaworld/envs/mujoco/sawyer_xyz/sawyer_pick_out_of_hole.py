@@ -41,7 +41,7 @@ class SawyerPickOutOfHoleEnv(SawyerXYZEnv):
         )
 
         self.init_config = {
-            'obj_init_pos': np.array([0, 0.84, -0.03]),
+            'obj_init_pos': np.array([0, 0.84, 0]),
             'obj_init_angle': 0.3,
             'hand_init_pos': np.array([0., .6, .2]),
         }
@@ -143,7 +143,7 @@ class SawyerPickOutOfHoleEnv(SawyerXYZEnv):
 
     def _get_obs(self):
         hand = self.get_endeff_pos()
-        objPos =  self.data.get_geom_xpos('objGeom')
+        objPos =  self.data.get_geom_xpos('obj_geom')
         flat_obs = np.concatenate((hand, objPos))
         if self.obs_type == 'with_goal_and_id':
             return np.concatenate([
@@ -163,7 +163,7 @@ class SawyerPickOutOfHoleEnv(SawyerXYZEnv):
 
     def _get_obs_dict(self):
         hand = self.get_endeff_pos()
-        objPos =  self.data.get_geom_xpos('objGeom')
+        objPos =  self.data.get_geom_xpos('obj_geom')
         flat_obs = np.concatenate((hand, objPos))
         return dict(
             state_observation=flat_obs,
@@ -188,7 +188,7 @@ class SawyerPickOutOfHoleEnv(SawyerXYZEnv):
         This should be use ONLY for visualization. Use self._state_goal for
         logging, learning, etc.
         """
-        objPos =  self.data.get_geom_xpos('objGeom')
+        objPos =  self.data.get_geom_xpos('obj_geom')
         self.data.site_xpos[self.model.site_name2id('objSite')] = (
             objPos
         )
@@ -212,11 +212,11 @@ class SawyerPickOutOfHoleEnv(SawyerXYZEnv):
     def adjust_initObjPos(self, orig_init_pos):
         #This is to account for meshes for the geom and object are not aligned
         #If this is not done, the object could be initialized in an extreme position
-        diff = self.get_body_com('obj')[:2] - self.data.get_geom_xpos('objGeom')[:2]
+        diff = self.get_body_com('obj')[:2] - self.data.get_geom_xpos('obj_geom')[:2]
         adjustedPos = orig_init_pos[:2] + diff
 
         #The convention we follow is that body_com[2] is always 0, and geom_pos[2] is the object height
-        return [adjustedPos[0], adjustedPos[1],self.data.get_geom_xpos('objGeom')[-1]]
+        return [adjustedPos[0], adjustedPos[1],self.data.get_geom_xpos('obj_geom')[-1]]
 
     def reset_model(self):
         self._reset_hand()
@@ -240,7 +240,7 @@ class SawyerPickOutOfHoleEnv(SawyerXYZEnv):
             self.obj_init_pos = np.concatenate((goal_pos[:2], [self.obj_init_pos[-1]]))
         self._set_goal_marker(self._state_goal)
         self._set_obj_xyz(self.obj_init_pos)
-        self.objHeight = self.data.get_geom_xpos('objGeom')[2]
+        self.objHeight = self.data.get_geom_xpos('obj_geom')[2]
         self.heightTarget = self.objHeight + self.liftThresh
         #self._set_obj_xyz_quat(self.obj_init_pos, self.obj_init_angle)
         self.curr_path_length = 0
