@@ -231,7 +231,7 @@ class SawyerDoorLockEnv(SawyerXYZEnv):
         # self.sim.model.body_pos[self.model.body_name2id('box')] = self.obj_init_pos
         # print(button_pos)
         self.sim.model.body_pos[self.model.body_name2id('door')] = door_pos
-        self.sim.model.body_pos[self.model.body_name2id('lock')] = door_pos
+        self.sim.model.body_pos[self.model.body_name2id('lock')] = np.array([0, 0., 0.])
         for _ in range(self.frame_skip):
             self.sim.step()
         self.obj_init_pos = self.data.get_geom_xpos('lockGeom')
