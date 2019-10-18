@@ -107,7 +107,7 @@ class SawyerPlateSlideBackEnv(SawyerXYZEnv):
 
     @property
     def model_name(self):
-        return get_asset_full_path('sawyer_xyz/sawyer_plate_slide.xml')
+        return get_asset_full_path('sawyer_xyz/sawyer_plate_slide.xml', v1=True)
 
     def step(self, action):
         if self.rotMode == 'euler':
@@ -139,7 +139,7 @@ class SawyerPlateSlideBackEnv(SawyerXYZEnv):
 
     def _get_obs(self):
         hand = self.get_endeff_pos()
-        objPos =  self.data.get_geom_xpos('objGeom')
+        objPos =  self.get_body_com('puck')
         flat_obs = np.concatenate((hand, objPos))
         if self.obs_type == 'with_goal_and_id':
             return np.concatenate([
@@ -159,7 +159,7 @@ class SawyerPlateSlideBackEnv(SawyerXYZEnv):
 
     def _get_obs_dict(self):
         hand = self.get_endeff_pos()
-        objPos =  self.data.get_geom_xpos('objGeom')
+        objPos = self.get_body_com('puck')
         flat_obs = np.concatenate((hand, objPos))
         return dict(
             state_observation=flat_obs,
@@ -211,7 +211,7 @@ class SawyerPlateSlideBackEnv(SawyerXYZEnv):
         self._reset_hand()
         self._state_goal = self.goal.copy()
         self.obj_init_pos = self.init_config['obj_init_pos']
-        self.objHeight = self.data.get_geom_xpos('objGeom')[2]
+        self.objHeight = self.get_body_com('puck')[2]
         if self.random_init:
             # self.obj_init_pos = np.random.uniform(-0.2, 0)
             # self._state_goal = np.squeeze(np.random.uniform(
@@ -229,10 +229,10 @@ class SawyerPlateSlideBackEnv(SawyerXYZEnv):
             self._state_goal = goal_pos
         #self._set_obj_xyz_quat(self.obj_init_pos, self.obj_init_angle)
         self._set_goal_marker(self._state_goal)
-        self.sim.model.body_pos[self.model.body_name2id('cabinet')] = self.obj_init_pos
+        self.sim.model.body_pos[self.model.body_name2id('puck_goal')] = self.obj_init_pos
         self._set_obj_xyz(np.array([0, 0.2]))
         self.curr_path_length = 0
-        self.maxDist = np.linalg.norm(self.data.get_geom_xpos('objGeom')[:-1] - self._state_goal[:-1])
+        self.maxDist = np.linalg.norm(self.get_body_com('puck')[:-1] - self._state_goal[:-1])
         self.target_reward = 1000*self.maxDist + 1000*2
         #Can try changing this
         return self._get_obs()

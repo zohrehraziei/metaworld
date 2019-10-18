@@ -107,7 +107,7 @@ class SawyerPlateSlideSideEnv(SawyerXYZEnv):
 
     @property
     def model_name(self):     
-        return get_asset_full_path('sawyer_xyz/sawyer_plate_slide_sideway.xml')
+        return get_asset_full_path('sawyer_xyz/sawyer_plate_slide_sideway.xml', v1=True)
 
     def step(self, action):
         if self.rotMode == 'euler':
@@ -139,7 +139,7 @@ class SawyerPlateSlideSideEnv(SawyerXYZEnv):
 
     def _get_obs(self):
         hand = self.get_endeff_pos()
-        objPos =  self.data.get_geom_xpos('objGeom')
+        objPos =  self.get_body_com('puck')
         flat_obs = np.concatenate((hand, objPos))
         if self.obs_type == 'with_goal_and_id':
             return np.concatenate([
@@ -159,7 +159,7 @@ class SawyerPlateSlideSideEnv(SawyerXYZEnv):
 
     def _get_obs_dict(self):
         hand = self.get_endeff_pos()
-        objPos =  self.data.get_geom_xpos('objGeom')
+        objPos =  self.get_body_com('puck')
         flat_obs = np.concatenate((hand, objPos))
         return dict(
             state_observation=flat_obs,
@@ -209,7 +209,7 @@ class SawyerPlateSlideSideEnv(SawyerXYZEnv):
         self._reset_hand()
         self._state_goal = self.goal.copy()
         self.obj_init_pos = self.init_config['obj_init_pos']
-        self.objHeight = self.data.get_geom_xpos('objGeom')[2]
+        self.objHeight = self.get_body_com('puck')[2]
         if self.random_init:
             # self.obj_init_pos = np.random.uniform(-0.2, 0)
             # self._state_goal = np.squeeze(np.random.uniform(
@@ -226,7 +226,7 @@ class SawyerPlateSlideSideEnv(SawyerXYZEnv):
             goal_pos = obj_pos[3:]
             self._state_goal = goal_pos
         #self._set_obj_xyz_quat(self.obj_init_pos, self.obj_init_angle)
-        self.sim.model.body_pos[self.model.body_name2id('cabinet')] = self._state_goal
+        self.sim.model.body_pos[self.model.body_name2id('puck_goal')] = self._state_goal
         self._set_obj_xyz(np.zeros(2))
         self.curr_path_length = 0
         self.maxDist = np.linalg.norm(self.obj_init_pos[:-1] - self._state_goal[:-1])

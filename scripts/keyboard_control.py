@@ -9,26 +9,12 @@ import gym
 
 import numpy as np
 
-from metaworld.envs.mujoco.sawyer_xyz.sawyer_door_hook import SawyerDoorHookEnv
-from metaworld.envs.mujoco.sawyer_xyz.sawyer_door import SawyerDoorEnv
+from metaworld.envs.mujoco.sawyer_xyz.sawyer_plate_slide import SawyerPlateSlideEnv
+from metaworld.envs.mujoco.sawyer_xyz.sawyer_plate_slide_back_side import SawyerPlateSlideBackSideEnv
+from metaworld.envs.mujoco.sawyer_xyz.sawyer_plate_slide_side import SawyerPlateSlideSideEnv
+from metaworld.envs.mujoco.sawyer_xyz.sawyer_plate_slide_back import SawyerPlateSlideBackEnv
 
-from metaworld.envs.mujoco.sawyer_xyz.sawyer_pick_and_place import \
-    SawyerPickAndPlaceEnv
-from metaworld.envs.mujoco.sawyer_xyz.sawyer_push_and_reach_env import \
-    SawyerPushAndReachXYEnv, SawyerPushAndReachXYZEnv
-from metaworld.envs.mujoco.sawyer_xyz.sawyer_push_and_reach_env_two_pucks import (
-    SawyerPushAndReachXYDoublePuckEnv,
-    SawyerPushAndReachXYZDoublePuckEnv,
-)
-
-from metaworld.envs.mujoco.sawyer_xyz.sawyer_reach import SawyerReachXYEnv, \
-    SawyerReachXYZEnv
-
-from metaworld.envs.mujoco.sawyer_xyz.sawyer_throw import SawyerThrowEnv
-from metaworld.envs.mujoco.sawyer_xyz.sawyer_hand_insert import SawyerHandInsertEnv
-from metaworld.envs.mujoco.sawyer_xyz.sawyer_sweep_into_goal import SawyerSweepIntoGoalEnv
-
-
+from metaworld.envs.mujoco.sawyer_xyz.sawyer_coffee_pull import SawyerCoffeePullEnv
 
 
 
@@ -76,7 +62,7 @@ import pygame
 # )
 # env = SawyerSweepEnv()
 # env = SawyerSweepIntoGoalEnv()
-env = SawyerBoxCloseEnv(random_init=True)
+env = SawyerPlateSlideBackEnv(random_init=True)
 NDIM = env.action_space.low.size
 lock_action = False
 random_action = False

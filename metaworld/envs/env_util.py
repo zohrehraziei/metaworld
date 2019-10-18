@@ -8,7 +8,7 @@ from gym.spaces import Box
 from pyquaternion import Quaternion
 
 ENV_ASSET_DIR = os.path.join(os.path.dirname(__file__), 'assets')
-
+UPDATED_ENV_ASSET_DIR = os.path.join(os.path.dirname(__file__), 'assets/assets_updated')
 
 def create_stats_ordered_dict(
         name,
@@ -105,8 +105,12 @@ def get_stat_in_paths(paths, dict_name, scalar_name):
     ]
 
 
-def get_asset_full_path(file_name):
-    return os.path.join(ENV_ASSET_DIR, file_name)
+def get_asset_full_path(file_name, v1=False):
+    if v1:
+        ENV_DIR = UPDATED_ENV_ASSET_DIR
+    else:
+        ENV_DIR = ENV_ASSET_DIR
+    return os.path.join(ENV_DIR, file_name)
 
 def concatenate_box_spaces(*spaces):
     """
