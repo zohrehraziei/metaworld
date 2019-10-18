@@ -105,7 +105,7 @@ class SawyerHandlePressEnv(SawyerXYZEnv):
 
     @property
     def model_name(self):
-        return get_asset_full_path('sawyer_xyz/sawyer_handle_press.xml')
+        return get_asset_full_path('sawyer_xyz/sawyer_handle_press.xml', v1=True)
 
     def step(self, action):
         if self.rotMode == 'euler':
@@ -135,7 +135,7 @@ class SawyerHandlePressEnv(SawyerXYZEnv):
 
     def _get_obs(self):
         hand = self.get_endeff_pos()
-        objPos =  self.data.site_xpos[self.model.site_name2id('handleStart')]
+        objPos = self.get_body_com('handle_press')
         flat_obs = np.concatenate((hand, objPos))
         if self.obs_type == 'with_goal_and_id':
             return np.concatenate([
@@ -155,7 +155,7 @@ class SawyerHandlePressEnv(SawyerXYZEnv):
 
     def _get_obs_dict(self):
         hand = self.get_endeff_pos()
-        objPos =  self.data.site_xpos[self.model.site_name2id('handleStart')]
+        objPos =  self.get_body_com('handle_press')
         flat_obs = np.concatenate((hand, objPos))
         return dict(
             state_observation=flat_obs,
@@ -171,7 +171,7 @@ class SawyerHandlePressEnv(SawyerXYZEnv):
         This should be use ONLY for visualization. Use self._state_goal for
         logging, learning, etc.
         """
-        objPos =  self.data.get_geom_xpos('handle')
+        objPos =  self.get_body_com('handle_press')
         self.data.site_xpos[self.model.site_name2id('objSite')] = (
             objPos
         )
@@ -208,12 +208,12 @@ class SawyerHandlePressEnv(SawyerXYZEnv):
             button_pos[1] -= 0.1
             button_pos[2] += 0.09
             self._state_goal = button_pos
-        self.sim.model.body_pos[self.model.body_name2id('box')] = self.obj_init_pos
-        self.sim.model.body_pos[self.model.body_name2id('handle')] = self._state_goal
+        self.sim.model.body_pos[self.model.body_name2id('handle_press')] = self.obj_init_pos
+        # self.sim.model.body_pos[self.model.body_name2id('handle')] = self._state_goal
         self._set_obj_xyz(0)
         self._state_goal = self.get_site_pos('goalPress')
         self.curr_path_length = 0
-        self.maxDist = np.abs(self.data.site_xpos[self.model.site_name2id('handleStart')][-1] - self._state_goal[-1])
+        self.maxDist = np.abs(self.get_body_com('handle_press')[-1] - self._state_goal[-1])
         self.target_reward = 1000*self.maxDist + 1000*2
         #Can try changing this
         return self._get_obs()

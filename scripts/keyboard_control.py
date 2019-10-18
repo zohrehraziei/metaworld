@@ -13,6 +13,10 @@ from metaworld.envs.mujoco.sawyer_xyz.sawyer_plate_slide import SawyerPlateSlide
 from metaworld.envs.mujoco.sawyer_xyz.sawyer_plate_slide_back_side import SawyerPlateSlideBackSideEnv
 from metaworld.envs.mujoco.sawyer_xyz.sawyer_plate_slide_side import SawyerPlateSlideSideEnv
 from metaworld.envs.mujoco.sawyer_xyz.sawyer_plate_slide_back import SawyerPlateSlideBackEnv
+from metaworld.envs.mujoco.sawyer_xyz.sawyer_handle_press import SawyerHandlePressEnv
+from metaworld.envs.mujoco.sawyer_xyz.sawyer_handle_pull import SawyerHandlePullEnv
+from metaworld.envs.mujoco.sawyer_xyz.sawyer_handle_press_side import SawyerHandlePressSideEnv
+from metaworld.envs.mujoco.sawyer_xyz.sawyer_handle_pull_side import SawyerHandlePullSideEnv
 
 from metaworld.envs.mujoco.sawyer_xyz.sawyer_coffee_pull import SawyerCoffeePullEnv
 
@@ -62,7 +66,7 @@ import pygame
 # )
 # env = SawyerSweepEnv()
 # env = SawyerSweepIntoGoalEnv()
-env = SawyerPlateSlideBackEnv(random_init=True)
+env = SawyerHandlePressSideEnv(random_init=True)
 NDIM = env.action_space.low.size
 lock_action = False
 random_action = False
@@ -100,6 +104,7 @@ while True:
     else:
         action = env.action_space.sample()
     ob, reward, done, infos = env.step(action)
+    # print(reward)
     # time.sleep(1)
     if done:
         obs = env.reset()
