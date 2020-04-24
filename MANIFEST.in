@@ -1,1 +1,6 @@
-graft metaworld/envs/assets 
+include README.md
+include LICENSE
+include CONTRIBUTING.md
+
+graft metaworld
+global-exclude *.py[cod] __pycache__ *.so
