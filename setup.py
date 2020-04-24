@@ -1,3 +1,4 @@
+import os
 from setuptools import find_packages, setup
 
 
@@ -21,11 +22,15 @@ extras['dev'] = [
     'pytest>=3.6',
 ]
 
+# Compute assets to bundle
+data_files = [(dirpath, filesnames) for (dirpath, dirnames, filesnames)
+              in os.walk('metaworld/envs/assets')]
 
 setup(
     name='metaworld',
     packages=find_packages(),
     include_package_data=True,
+    data_files=data_files,
     install_requires=required,
     extras_require=extras,
 )
