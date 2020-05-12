@@ -212,11 +212,7 @@ class SawyerDrawerOpenEnv(SawyerXYZEnv):
             #     self.goal_space.low,
             #     np.array(self.data.get_geom_xpos('handle').copy()[1] + 0.05),
             # ))
-            obj_pos = np.random.uniform(
-                self.obj_and_goal_space.low,
-                self.obj_and_goal_space.high,
-                size=(self.obj_and_goal_space.low.size),
-            )
+            obj_pos = self._get_state_rand_vec()
             # self.obj_init_qpos = goal_pos[-1]
             self.obj_init_pos = obj_pos
             goal_pos = obj_pos.copy()

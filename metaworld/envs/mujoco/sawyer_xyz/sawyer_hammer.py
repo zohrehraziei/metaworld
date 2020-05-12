@@ -208,11 +208,7 @@ class SawyerHammerEnv(SawyerXYZEnv):
         self.hammerHeight = self.get_body_com('hammer').copy()[2]
         self.heightTarget = self.hammerHeight + self.liftThresh
         if self.random_init:
-            goal_pos = np.random.uniform(
-                self.obj_and_goal_space.low,
-                self.obj_and_goal_space.high,
-                size=(self.obj_and_goal_space.low.size),
-            )
+            goal_pos = self._get_state_rand_vec()
             while np.linalg.norm(goal_pos[:2] - goal_pos[-3:-1]) < 0.1:
                 goal_pos = np.random.uniform(
                     self.obj_and_goal_space.low,

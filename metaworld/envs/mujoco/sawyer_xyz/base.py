@@ -191,7 +191,7 @@ class SawyerXYZEnv(SawyerMocapBase, metaclass=abc.ABCMeta):
             self._state_goal_idx[goal] = 1.
         else:
             self.goal = goal
-    
+
     def set_init_config(self, config):
         assert isinstance(config, dict)
         for key, val in config.items():
@@ -202,7 +202,7 @@ class SawyerXYZEnv(SawyerMocapBase, metaclass=abc.ABCMeta):
     to be not used.
     '''
     def sample_goals(self, batch_size):
-        '''Note: should be replaced by sample_goals_ if not used''' 
+        '''Note: should be replaced by sample_goals_ if not used'''
         # Required by HER-TD3
         goals = self.sample_goals_(batch_size)
         if self.discrete_goal_space is not None:
@@ -234,3 +234,24 @@ class SawyerXYZEnv(SawyerMocapBase, metaclass=abc.ABCMeta):
         qpos[9:12] = pos.copy()
         qvel[9:15] = 0
         self.set_state(qpos, qvel)
+
+    def _get_state_rand_vec(self):
+        # WIP: This probably doesn't work?
+        rand_state = np.random.uniform(
+            self.obj_space.low,
+            self.obj_space.high,
+            size=self.obj_space.low.size)
+        rand_vec = np.hstack((rand_state, self._state_goal))
+        assert self.obj_and_goal_space.contains(rand_vec)
+        return rand_vec
+
+        # goal = self._state_goal[:2]
+        # assert self.goal_space.contains(goal)
+        # rand_vec = np.random.uniform(
+            # self.obj_and_goal_space.low,
+            # self.obj_and_goal_space.high,
+            # size=(self.obj_and_goal_space.low.size),
+        # )
+        # assert len(rand_vec) == 4
+        # rand_vec[2:] = goal
+        # return rand_vec

@@ -191,17 +191,9 @@ class SawyerNutAssemblyEnv(SawyerXYZEnv):
         self.objHeight = self.data.get_geom_xpos('RoundNut-8')[2]
         self.heightTarget = self.objHeight + self.liftThresh
         if self.random_init:
-            goal_pos = np.random.uniform(
-                self.obj_and_goal_space.low,
-                self.obj_and_goal_space.high,
-                size=(self.obj_and_goal_space.low.size),
-            )
+            goal_pos = self._get_state_rand_vec()
             while np.linalg.norm(goal_pos[:2] - goal_pos[-3:-1]) < 0.1:
-                goal_pos = np.random.uniform(
-                    self.obj_and_goal_space.low,
-                    self.obj_and_goal_space.high,
-                    size=(self.obj_and_goal_space.low.size),
-                )
+                goal_pos = self._get_state_rand_vec()
             self.obj_init_pos = goal_pos[:3]
             self._state_goal = goal_pos[-3:]
         peg_pos = self._state_goal - np.array([0., 0., 0.05])
