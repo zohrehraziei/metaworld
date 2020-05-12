@@ -13,14 +13,23 @@ from metaworld.envs.mujoco.utils.rotation import euler2quat
 from metaworld.envs.mujoco.sawyer_xyz.base import OBS_TYPE
 
 class SawyerShelfRemoveEnv(SawyerXYZEnv):
-    def __init__(
+    def __init__(self):
+        hand_low=(-0.5, 0.40, 0.05)
+        hand_high=(0.5, 1, 0.5)
+        SawyerXYZEnv.__init__(
+            self,
+            hand_low=hand_low,
+            hand_high=hand_high,
+        )
+
+    def _set_task_inner(
             self,
             random_init=True,
             obs_type='with_goal',
-            # tasks = [{'goal': np.array([0., 0.6, 0.02]),  'obj_init_pos':np.array([0., 0.8, 0.001]), 'obj_init_angle': 0.3}], 
+            # tasks = [{'goal': np.array([0., 0.6, 0.02]),  'obj_init_pos':np.array([0., 0.8, 0.001]), 'obj_init_angle': 0.3}],
             # goal_low=(-0.1, 0.6, 0.02),
             # goal_high=(0.1, 0.6, 0.02),
-            tasks = [{'goal': np.array([0., 0.92, 0.02]),  'obj_init_pos':np.array([0., 0.8, 0.081]), 'obj_init_angle': 0.3}], 
+            tasks = [{'goal': np.array([0., 0.92, 0.02]),  'obj_init_pos':np.array([0., 0.8, 0.081]), 'obj_init_angle': 0.3}],
             goal_low=(0, 0.92, 0.02),
             goal_high=(0, 0.92, 0.02),
             hand_init_pos = (0, 0.6, 0.2),
@@ -29,22 +38,10 @@ class SawyerShelfRemoveEnv(SawyerXYZEnv):
             rotMode='fixed',#'fixed',
             multitask=False,
             multitask_num=1,
-            **kwargs
     ):
-
-        hand_low=(-0.5, 0.40, 0.05)
-        hand_high=(0.5, 1, 0.5)
         obj_low=(-0.1, 0.75, 0.081)
         obj_high=(0.1, 0.8, 0.081)
-        SawyerXYZEnv.__init__(
-            self,
-            frame_skip=5,
-            action_scale=1./100,
-            hand_low=hand_low,
-            hand_high=hand_high,
-            model_name=self.model_name,
-            **kwargs
-        )
+
         assert obs_type in OBS_TYPE
         if multitask:
             obs_type = 'with_goal_and_id'
@@ -52,7 +49,7 @@ class SawyerShelfRemoveEnv(SawyerXYZEnv):
 
         if goal_low is None:
             goal_low = self.hand_low
-        
+
         if goal_high is None:
             goal_high = self.hand_high
 
@@ -181,7 +178,7 @@ class SawyerShelfRemoveEnv(SawyerXYZEnv):
 
     def _get_info(self):
         pass
-    
+
     def _set_goal_marker(self, goal):
         """
         This should be use ONLY for visualization. Use self._state_goal for
@@ -200,7 +197,7 @@ class SawyerShelfRemoveEnv(SawyerXYZEnv):
         self.data.site_xpos[self.model.site_name2id('objSite')] = (
             objPos
         )
-    
+
 
 
 
@@ -337,7 +334,7 @@ class SawyerShelfRemoveEnv(SawyerXYZEnv):
                 return 0
         pushRew = pushReward()
         reward = reachRew + pushRew
-      
+
         return [reward, reachDist, pushDistxy, objPos[-1] < self.obj_init_pos[-1] - 0.05 and pushDistxy < 0.2]
 
     def get_diagnostics(self, paths, prefix=''):

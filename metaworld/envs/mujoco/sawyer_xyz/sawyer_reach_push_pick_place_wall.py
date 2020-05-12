@@ -13,7 +13,16 @@ from metaworld.envs.mujoco.utils.rotation import euler2quat
 from metaworld.envs.mujoco.sawyer_xyz.base import OBS_TYPE
 
 class SawyerReachPushPickPlaceWallEnv(SawyerXYZEnv):
-    def __init__(
+    def __init__(self):
+        hand_low=(-0.5, 0.40, 0.05)
+        hand_high=(0.5, 1, 0.5)
+        SawyerXYZEnv.__init__(
+            self,
+            hand_low=hand_low,
+            hand_high=hand_high,
+        )
+
+    def _set_task_inner(
             self,
             random_init=False,
             obs_type='plain',
@@ -25,22 +34,10 @@ class SawyerReachPushPickPlaceWallEnv(SawyerXYZEnv):
             sampleMode='equal',
             rewMode = 'orig',
             rotMode='fixed',
-            **kwargs
     ):
-
-        hand_low=(-0.5, 0.40, 0.05)
-        hand_high=(0.5, 1, 0.5)
         obj_low=(-0.05, 0.6, 0.015)
         obj_high=(0.05, 0.65, 0.015)
-        SawyerXYZEnv.__init__(
-            self,
-            frame_skip=5,
-            action_scale=1./100,
-            hand_low=hand_low,
-            hand_high=hand_high,
-            model_name=self.model_name,
-            **kwargs
-        )
+
         self.task_type = task_type
         self.init_config = {
             'obj_init_angle': .3,
@@ -67,7 +64,7 @@ class SawyerReachPushPickPlaceWallEnv(SawyerXYZEnv):
 
         if goal_low is None:
             goal_low = self.hand_low
-        
+
         if goal_high is None:
             goal_high = self.hand_high
 
@@ -155,7 +152,7 @@ class SawyerReachPushPickPlaceWallEnv(SawyerXYZEnv):
         info = {'reachDist': reachDist, 'pickRew':pickRew, 'epRew' : reward, 'goalDist': goal_dist, 'success': success}
         info['goal'] = self.goal
         return ob, reward, False, info
-   
+
     def _get_obs(self):
         hand = self.get_endeff_pos()
         objPos =  self.data.get_geom_xpos('objGeom')
@@ -188,7 +185,7 @@ class SawyerReachPushPickPlaceWallEnv(SawyerXYZEnv):
 
     def _get_info(self):
         pass
-    
+
     def _set_goal_marker(self, goal):
         """
         This should be use ONLY for visualization. Use self._state_goal for
@@ -212,7 +209,7 @@ class SawyerReachPushPickPlaceWallEnv(SawyerXYZEnv):
         self.data.site_xpos[self.model.site_name2id('objSite')] = (
             objPos
         )
-    
+
 
 
 
@@ -265,7 +262,7 @@ class SawyerReachPushPickPlaceWallEnv(SawyerXYZEnv):
             idx = 1
         else:
             idx = 2
-        
+
         self.target_reward = self.target_rewards[idx]
         self.num_resets += 1
         return self._get_obs()
@@ -363,15 +360,15 @@ class SawyerReachPushPickPlaceWallEnv(SawyerXYZEnv):
 
 
             def objDropped():
-                return (objPos[2] < (self.objHeight + 0.005)) and (placingDist >0.02) and (reachDist > 0.02) 
+                return (objPos[2] < (self.objHeight + 0.005)) and (placingDist >0.02) and (reachDist > 0.02)
                 # Object on the ground, far away from the goal, and from the gripper
                 #Can tweak the margin limits
-           
+
             def objGrasped(thresh = 0):
                 sensorData = self.data.sensordata
                 return (sensorData[0]>thresh) and (sensorData[1]> thresh)
 
-            def orig_pickReward():       
+            def orig_pickReward():
                 # hScale = 50
                 hScale = 100
                 # hScale = 1000

@@ -14,29 +14,26 @@ from metaworld.envs.mujoco.sawyer_xyz.base import OBS_TYPE
 
 
 class SawyerDrawerCloseEnv(SawyerXYZEnv):
-    def __init__(
+    def __init__(self):
+        hand_low=(-0.5, 0.40, 0.05)
+        hand_high=(0.5, 1, 0.5)
+        SawyerXYZEnv.__init__(
+            self,
+            hand_low=hand_low,
+            hand_high=hand_high,
+        )
+
+    def _set_task_inner(
             self,
             random_init=False,
             obs_type='plain',
             goal_low=None,
             goal_high=None,
             rotMode='fixed',
-            **kwargs
     ):
-
-        hand_low=(-0.5, 0.40, 0.05)
-        hand_high=(0.5, 1, 0.5)
         obj_low=(-0.1, 0.9, 0.04)
         obj_high=(0.1, 0.9, 0.04)
-        SawyerXYZEnv.__init__(
-            self,
-            frame_skip=5,
-            action_scale=1./100,
-            hand_low=hand_low,
-            hand_high=hand_high,
-            model_name=self.model_name,
-            **kwargs
-        )
+
 
         self.init_config = {
             'obj_init_angle': np.array([0.3, ], dtype=np.float32),
@@ -50,7 +47,7 @@ class SawyerDrawerCloseEnv(SawyerXYZEnv):
 
         if goal_low is None:
             goal_low = self.hand_low
-        
+
         if goal_high is None:
             goal_high = self.hand_high
 
@@ -165,7 +162,7 @@ class SawyerDrawerCloseEnv(SawyerXYZEnv):
 
     def _get_info(self):
         pass
-    
+
     def _set_goal_marker(self, goal):
         """
         This should be use ONLY for visualization. Use self._state_goal for
@@ -184,7 +181,7 @@ class SawyerDrawerCloseEnv(SawyerXYZEnv):
         self.data.site_xpos[self.model.site_name2id('objSite')] = (
             objPos
         )
-    
+
 
 
 
@@ -247,7 +244,7 @@ class SawyerDrawerCloseEnv(SawyerXYZEnv):
         return np.array(rewards)
 
     def compute_reward(self, actions, obs):
-        if isinstance(obs, dict): 
+        if isinstance(obs, dict):
             obs = obs['state_observation']
 
         objPos = obs[3:6]
@@ -270,8 +267,8 @@ class SawyerDrawerCloseEnv(SawyerXYZEnv):
         else:
             pullRew = 0
         reward = -reachDist + pullRew
-      
-        return [reward, reachDist, pullDist] 
+
+        return [reward, reachDist, pullDist]
 
     def get_diagnostics(self, paths, prefix=''):
         statistics = OrderedDict()

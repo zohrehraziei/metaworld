@@ -15,28 +15,25 @@ from metaworld.envs.mujoco.sawyer_xyz.base import OBS_TYPE
 
 
 class SawyerHandlePullSideEnv(SawyerXYZEnv):
-    def __init__(
+    def __init__(self):
+        hand_low=(-0.5, 0.40, 0.05)
+        hand_high=(0.5, 1, 0.5)
+        SawyerXYZEnv.__init__(
+            self,
+            hand_low=hand_low,
+            hand_high=hand_high,
+        )
+
+    def _set_task_inner(
             self,
             random_init=True,
             obs_type='plain',
             goal_low=None,
             goal_high=None,
             rotMode='fixed',
-            **kwargs
     ):
-        hand_low=(-0.5, 0.40, 0.05)
-        hand_high=(0.5, 1, 0.5)
         obj_low=(-0.35, 0.65, 0.05)
         obj_high=(-0.25, 0.75, 0.05)
-        SawyerXYZEnv.__init__(
-            self,
-            frame_skip=5,
-            action_scale=1./100,
-            hand_low=hand_low,
-            hand_high=hand_high,
-            model_name=self.model_name,
-            **kwargs
-        )
         self.init_config = {
             'obj_init_pos': np.array([-0.3, 0.7, 0.05]),
             'hand_init_pos': np.array((0, 0.6, 0.2),),
@@ -44,13 +41,13 @@ class SawyerHandlePullSideEnv(SawyerXYZEnv):
         self.goal = np.array([-0.2, 0.7, 0.14])
         self.obj_init_pos = self.init_config['obj_init_pos']
         self.hand_init_pos = self.init_config['hand_init_pos']
-    
+
         assert obs_type in OBS_TYPE
         self.obs_type = obs_type
 
         if goal_low is None:
             goal_low = self.hand_low
-        
+
         if goal_high is None:
             goal_high = self.hand_high
 
@@ -223,7 +220,7 @@ class SawyerHandlePullSideEnv(SawyerXYZEnv):
         return np.array(rewards)
 
     def compute_reward(self, actions, obs):
-        if isinstance(obs, dict): 
+        if isinstance(obs, dict):
             obs = obs['state_observation']
 
         objPos = obs[3:6]
@@ -245,7 +242,7 @@ class SawyerHandlePullSideEnv(SawyerXYZEnv):
         pressRew = max(pressRew, 0)
         reward = -reachDist + pressRew
 
-        return [reward, reachDist, pressDist] 
+        return [reward, reachDist, pressDist]
 
     def get_diagnostics(self, paths, prefix=''):
         statistics = OrderedDict()

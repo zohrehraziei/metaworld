@@ -14,7 +14,16 @@ from metaworld.envs.mujoco.sawyer_xyz.base import OBS_TYPE
 
 
 class SawyerHammerEnv(SawyerXYZEnv):
-    def __init__(
+    def __init__(self):
+        hand_low=(-0.5, 0.40, 0.05)
+        hand_high=(0.5, 1, 0.5)
+        SawyerXYZEnv.__init__(
+            self,
+            hand_low=hand_low,
+            hand_high=hand_high,
+        )
+
+    def _set_task_inner(
             self,
             random_init=False,
             obs_type='plain',
@@ -23,21 +32,9 @@ class SawyerHammerEnv(SawyerXYZEnv):
             liftThresh = 0.09,
             rotMode='fixed',
             rewMode='orig',
-            **kwargs
     ):
-        hand_low=(-0.5, 0.40, 0.05)
-        hand_high=(0.5, 1, 0.5)
         obj_low=(-0.1, 0.5, 0.02)
         obj_high=(0.1, 0.6, 0.02)
-        SawyerXYZEnv.__init__(
-            self,
-            frame_skip=5,
-            action_scale=1./100,
-            hand_low=hand_low,
-            hand_high=hand_high,
-            model_name=self.model_name,
-            **kwargs
-        )
         # TODO should we put this to goal instead of initial config?
         self.init_config = {
             'hammer_init_pos': np.array([0, 0.6, 0.02]),
@@ -49,7 +46,7 @@ class SawyerHammerEnv(SawyerXYZEnv):
 
         if goal_low is None:
             goal_low = self.hand_low
-        
+
         if goal_high is None:
             goal_high = self.hand_high
 
@@ -180,7 +177,7 @@ class SawyerHammerEnv(SawyerXYZEnv):
         self.data.site_xpos[self.model.site_name2id('objSite')] = (
             objPos
         )
-    
+
 
 
 
@@ -256,7 +253,7 @@ class SawyerHammerEnv(SawyerXYZEnv):
         return np.array(rewards)
 
     def compute_reward(self, actions, obs, mode='orig'):
-        if isinstance(obs, dict): 
+        if isinstance(obs, dict):
             obs = obs['state_observation']
 
         hammerPos = obs[3:6]
@@ -295,15 +292,15 @@ class SawyerHammerEnv(SawyerXYZEnv):
 
 
         def objDropped():
-            return (hammerPos[2] < (self.hammerHeight + 0.005)) and (hammerDist >0.02) and (reachDist > 0.02) 
+            return (hammerPos[2] < (self.hammerHeight + 0.005)) and (hammerDist >0.02) and (reachDist > 0.02)
             # Object on the ground, far away from the goal, and from the gripper
             #Can tweak the margin limits
-       
+
         def objGrasped(thresh = 0):
             sensorData = self.data.sensordata
             return (sensorData[0]>thresh) and (sensorData[1]> thresh)
 
-        def orig_pickReward():       
+        def orig_pickReward():
             # hScale = 50
             hScale = 100
             if self.pickCompleted and not(objDropped()):

@@ -15,29 +15,26 @@ from metaworld.envs.mujoco.sawyer_xyz.base import OBS_TYPE
 
 
 class SawyerButtonPressTopdownEnv(SawyerXYZEnv):
-    def __init__(
+    def __init__(self):
+        hand_low=(-0.5, 0.40, 0.05)
+        hand_high=(0.5, 1, 0.5)
+        SawyerXYZEnv.__init__(
+            self,
+            hand_low=hand_low,
+            hand_high=hand_high,
+        )
+
+    def _set_task_inner(
             self,
             random_init=True,
             obs_type='plain',
             goal_low=None,
             goal_high=None,
             rotMode='fixed',
-            **kwargs
     ):
-
-        hand_low=(-0.5, 0.40, 0.05)
-        hand_high=(0.5, 1, 0.5)
         obj_low=(-0.1, 0.8, 0.05)
         obj_high=(0.1, 0.9, 0.05)
-        SawyerXYZEnv.__init__(
-            self,
-            frame_skip=5,
-            action_scale=1./100,
-            hand_low=hand_low,
-            hand_high=hand_high,
-            model_name=self.model_name,
-            **kwargs
-        )
+
 
         self.init_config = {
             'obj_init_pos': np.array([0, 0.8, 0.05], dtype=np.float32),
@@ -52,7 +49,7 @@ class SawyerButtonPressTopdownEnv(SawyerXYZEnv):
 
         if goal_low is None:
             goal_low = self.hand_low
-        
+
         if goal_high is None:
             goal_high = self.hand_high
 
@@ -172,7 +169,7 @@ class SawyerButtonPressTopdownEnv(SawyerXYZEnv):
         self.data.site_xpos[self.model.site_name2id('objSite')] = (
             objPos
         )
-    
+
 
 
 
@@ -228,7 +225,7 @@ class SawyerButtonPressTopdownEnv(SawyerXYZEnv):
         return np.array(rewards)
 
     def compute_reward(self, actions, obs):
-        if isinstance(obs, dict): 
+        if isinstance(obs, dict):
             obs = obs['state_observation']
 
         objPos = obs[3:6]
@@ -258,7 +255,7 @@ class SawyerButtonPressTopdownEnv(SawyerXYZEnv):
         pressRew = max(pressRew, 0)
         reward = reachRew + pressRew
 
-        return [reward, reachDist, pressDist] 
+        return [reward, reachDist, pressDist]
 
     def get_diagnostics(self, paths, prefix=''):
         statistics = OrderedDict()

@@ -14,29 +14,26 @@ from metaworld.envs.mujoco.sawyer_xyz.base import OBS_TYPE
 
 
 class SawyerDrawerOpenEnv(SawyerXYZEnv):
-    def __init__(
+    def __init__(self):
+        hand_low=(-0.5, 0.40, 0.05)
+        hand_high=(0.5, 1, 0.5)
+        SawyerXYZEnv.__init__(
+            self,
+            hand_low=hand_low,
+            hand_high=hand_high,
+        )
+
+    def _set_task_inner(
             self,
             obs_type='plain',
             random_init=False,
             goal_low=None,
             goal_high=None,
             rotMode='fixed',
-            **kwargs
     ):
-
-        hand_low=(-0.5, 0.40, 0.05)
-        hand_high=(0.5, 1, 0.5)
         obj_low=(-0.1, 0.9, 0.04)
         obj_high=(0.1, 0.9, 0.04)
-        SawyerXYZEnv.__init__(
-            self,
-            frame_skip=5,
-            action_scale=1./100,
-            hand_low=hand_low,
-            hand_high=hand_high,
-            model_name=self.model_name,
-            **kwargs
-        )
+
 
         self.init_config = {
             'obj_init_angle': np.array([0.3, ], dtype=np.float32),
@@ -52,10 +49,10 @@ class SawyerDrawerOpenEnv(SawyerXYZEnv):
 
         if goal_low is None:
             goal_low = self.hand_low
-        
+
         if goal_high is None:
             goal_high = self.hand_high
-        
+
         assert obs_type in OBS_TYPE
         self.obs_type = obs_type
         self.random_init = random_init
@@ -171,7 +168,7 @@ class SawyerDrawerOpenEnv(SawyerXYZEnv):
 
     def _get_info(self):
         pass
-    
+
     def _set_goal_marker(self, goal):
         """
         This should be use ONLY for visualization. Use self._state_goal for
@@ -190,7 +187,7 @@ class SawyerDrawerOpenEnv(SawyerXYZEnv):
         self.data.site_xpos[self.model.site_name2id('objSite')] = (
             objPos
         )
-    
+
 
 
 
@@ -255,7 +252,7 @@ class SawyerDrawerOpenEnv(SawyerXYZEnv):
         return np.array(rewards)
 
     def compute_reward(self, actions, obs):
-        if isinstance(obs, dict): 
+        if isinstance(obs, dict):
             obs = obs['state_observation']
 
         objPos = obs[3:6]
@@ -301,8 +298,8 @@ class SawyerDrawerOpenEnv(SawyerXYZEnv):
         # pullRew = -pullDist
         pullRew = pullReward()
         reward = reachRew + pullRew# - actions[-1]/50
-      
-        return [reward, reachDist, pullDist] 
+
+        return [reward, reachDist, pullDist]
 
     def get_diagnostics(self, paths, prefix=''):
         statistics = OrderedDict()

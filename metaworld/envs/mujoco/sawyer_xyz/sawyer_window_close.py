@@ -14,7 +14,16 @@ from metaworld.envs.mujoco.utils.rotation import euler2quat
 from metaworld.envs.mujoco.sawyer_xyz.base import OBS_TYPE
 
 class SawyerWindowCloseEnv(SawyerXYZEnv):
-    def __init__(
+    def __init__(self):
+        hand_low=(-0.5, 0.40, 0.05)
+        hand_high=(0.5, 1, 0.5)
+        SawyerXYZEnv.__init__(
+            self,
+            hand_low=hand_low,
+            hand_high=hand_high,
+        )
+
+    def _set_task_inner(
             self,
             random_init=False,
             obs_type='plain',
@@ -23,21 +32,9 @@ class SawyerWindowCloseEnv(SawyerXYZEnv):
             liftThresh = 0.02,
             rewMode = 'orig',
             rotMode='fixed',
-            **kwargs
     ):
-        hand_low=(-0.5, 0.40, 0.05)
-        hand_high=(0.5, 1, 0.5)
         obj_low=(0., 0.75, 0.15)
         obj_high=(0., 0.9, 0.15)
-        SawyerXYZEnv.__init__(
-            self,
-            frame_skip=5,
-            action_scale=1./100,
-            hand_low=hand_low,
-            hand_high=hand_high,
-            model_name=self.model_name,
-            **kwargs
-        )
 
         self.init_config = {
             'obj_init_angle': 0.3,
@@ -54,7 +51,7 @@ class SawyerWindowCloseEnv(SawyerXYZEnv):
 
         if goal_low is None:
             goal_low = self.hand_low
-        
+
         if goal_high is None:
             goal_high = self.hand_high
 
@@ -173,7 +170,7 @@ class SawyerWindowCloseEnv(SawyerXYZEnv):
 
     def _get_info(self):
         pass
-    
+
     def _set_goal_marker(self, goal):
         """
         This should be use ONLY for visualization. Use self._state_goal for
@@ -257,7 +254,7 @@ class SawyerWindowCloseEnv(SawyerXYZEnv):
         return np.array(rewards)
 
     def compute_reward(self, actions, obs, mode = 'general'):
-        if isinstance(obs, dict): 
+        if isinstance(obs, dict):
             obs = obs['state_observation']
 
         objPos = obs[3:6]
@@ -319,15 +316,15 @@ class SawyerWindowCloseEnv(SawyerXYZEnv):
 
 
         # def objDropped():
-        # 	return (objPos[2] < (self.objHeight + 0.005)) and (pullDist >0.02) and (reachDist > 0.02) 
+        # 	return (objPos[2] < (self.objHeight + 0.005)) and (pullDist >0.02) and (reachDist > 0.02)
         # 	# Object on the ground, far away from the goal, and from the gripper
         # 	#Can tweak the margin limits
-       
+
         # def objGrasped(thresh = 0):
         # 	sensorData = self.data.sensordata
         # 	return (sensorData[0]>thresh) and (sensorData[1]> thresh)
 
-        # def orig_pickReward():       
+        # def orig_pickReward():
         # 	# hScale = 50
         # 	hScale = 100
         # 	if self.pickCompleted and not(objDropped()):
@@ -369,8 +366,8 @@ class SawyerWindowCloseEnv(SawyerXYZEnv):
         # pullRew , pullDist = pullReward()
         # assert ((pullRew >=0) and (pickRew>=0))
         # reward = reachRew + pickRew + pullRew
-      
-        # return [reward, reachDist, pickRew, pullDist] 
+
+        # return [reward, reachDist, pickRew, pullDist]
 
     def get_diagnostics(self, paths, prefix=''):
         statistics = OrderedDict()

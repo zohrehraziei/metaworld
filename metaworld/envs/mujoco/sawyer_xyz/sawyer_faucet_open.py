@@ -14,28 +14,25 @@ from metaworld.envs.mujoco.sawyer_xyz.base import OBS_TYPE
 
 
 class SawyerFaucetOpenEnv(SawyerXYZEnv):
-    def __init__(
+    def __init__(self):
+        hand_low=(-0.5, 0.40, -0.15)
+        hand_high=(0.5, 1, 0.5)
+        SawyerXYZEnv.__init__(
+            self,
+            hand_low=hand_low,
+            hand_high=hand_high,
+        )
+
+    def _set_task_inner(
             self,
             random_init=False,
             obs_type='plain',
             goal_low=None,
             goal_high=None,
             rotMode='fixed',#'fixed',
-            **kwargs
     ):
-        hand_low=(-0.5, 0.40, -0.15)
-        hand_high=(0.5, 1, 0.5)
         obj_low=(-0.05, 0.8, 0.05)
         obj_high=(0.05, 0.85, 0.05)
-        SawyerXYZEnv.__init__(
-            self,
-            frame_skip=5,
-            action_scale=1./100,
-            hand_low=hand_low,
-            hand_high=hand_high,
-            model_name=self.model_name,
-            **kwargs
-        )
 
         self.init_config = {
             'obj_init_pos': np.array([0, 0.8, 0.05]),
@@ -50,7 +47,7 @@ class SawyerFaucetOpenEnv(SawyerXYZEnv):
 
         if goal_low is None:
             goal_low = self.hand_low
-        
+
         if goal_high is None:
             goal_high = self.hand_high
 
@@ -178,7 +175,7 @@ class SawyerFaucetOpenEnv(SawyerXYZEnv):
         self.data.site_xpos[self.model.site_name2id('objSite')] = (
             objPos
         )
-    
+
     def _set_goal_marker(self, goal):
         """
         This should be use ONLY for visualization. Use self._state_goal for
@@ -242,7 +239,7 @@ class SawyerFaucetOpenEnv(SawyerXYZEnv):
         return np.array(rewards)
 
     def compute_reward(self, actions, obs):
-        if isinstance(obs, dict): 
+        if isinstance(obs, dict):
             obs = obs['state_observation']
 
         objPos = obs[3:6]
@@ -253,13 +250,13 @@ class SawyerFaucetOpenEnv(SawyerXYZEnv):
         pullGoal = self._state_goal
 
         pullDist = np.linalg.norm(objPos - pullGoal)
-        reachDist = np.linalg.norm(objPos - fingerCOM)  
-        # reachDistxy = np.linalg.norm(objPos[:-1] - fingerCOM[:-1])    
-        # zDist = np.linalg.norm(fingerCOM[-1] - self.init_fingerCOM[-1])   
-        # if reachDistxy < 0.05: #0.02  
-        #     reachRew = -reachDist 
-        # else: 
-        #     reachRew =  -reachDistxy - zDist  
+        reachDist = np.linalg.norm(objPos - fingerCOM)
+        # reachDistxy = np.linalg.norm(objPos[:-1] - fingerCOM[:-1])
+        # zDist = np.linalg.norm(fingerCOM[-1] - self.init_fingerCOM[-1])
+        # if reachDistxy < 0.05: #0.02
+        #     reachRew = -reachDist
+        # else:
+        #     reachRew =  -reachDistxy - zDist
         reachRew = -reachDist
 
         def reachCompleted():
@@ -289,8 +286,8 @@ class SawyerFaucetOpenEnv(SawyerXYZEnv):
         pullRew = pullReward()
         reward = reachRew + pullRew# - actions[-1]/50
         # reward = pullRew# - actions[-1]/50
-      
-        return [reward, reachDist, pullDist] 
+
+        return [reward, reachDist, pullDist]
 
     def get_diagnostics(self, paths, prefix=''):
         statistics = OrderedDict()

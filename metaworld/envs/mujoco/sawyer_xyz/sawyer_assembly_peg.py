@@ -14,7 +14,18 @@ from metaworld.envs.mujoco.sawyer_xyz.base import OBS_TYPE
 
 
 class SawyerNutAssemblyEnv(SawyerXYZEnv):
-    def __init__(
+    def __init__(self):
+        hand_low=(-0.5, 0.40, 0.05)
+        hand_high=(0.5, 1, 0.5)
+
+        SawyerXYZEnv.__init__(
+            self,
+            hand_low=hand_low,
+            hand_high=hand_high,
+        )
+
+    def _set_task_inner(
+
             self,
             random_init=True,
             obs_type='with_goal',
@@ -23,23 +34,9 @@ class SawyerNutAssemblyEnv(SawyerXYZEnv):
             liftThresh = 0.1,
             rewMode = 'orig',
             rotMode='fixed',
-            **kwargs
     ):
-
-        hand_low=(-0.5, 0.40, 0.05)
-        hand_high=(0.5, 1, 0.5)
         obj_low=(0, 0.6, 0.02)
         obj_high=(0, 0.6, 0.02)
-
-        SawyerXYZEnv.__init__(
-            self,
-            frame_skip=5,
-            action_scale=1./100,
-            hand_low=hand_low,
-            hand_high=hand_high,
-            model_name=self.model_name,
-            **kwargs
-        )
 
         self.init_config = {
             'obj_init_angle': 0.3,
@@ -173,7 +170,7 @@ class SawyerNutAssemblyEnv(SawyerXYZEnv):
         self.data.site_xpos[self.model.site_name2id('RoundNut')] = (
             objPos
         )
-    
+
     def _set_goal_marker(self, goal):
         """
         This should be use ONLY for visualization. Use self._state_goal for
@@ -272,8 +269,8 @@ class SawyerNutAssemblyEnv(SawyerXYZEnv):
 
 
         def objDropped():
-            return (objPos[2] < (self.objHeight + 0.005)) and (placingDist >0.02) and (reachDist > 0.02) 
-       
+            return (objPos[2] < (self.objHeight + 0.005)) and (placingDist >0.02) and (reachDist > 0.02)
+
         def objGrasped(thresh = 0):
             sensorData = self.data.sensordata
             return (sensorData[0]>thresh) and (sensorData[1]> thresh)
@@ -284,13 +281,13 @@ class SawyerNutAssemblyEnv(SawyerXYZEnv):
                return True
             else:
                return False
-        
+
         if placeCompletionCriteria():
             self.placeCompleted = True
         else:
             self.placeCompleted = False
 
-        def orig_pickReward():       
+        def orig_pickReward():
             hScale = 100
             if self.placeCompleted or (self.pickCompleted and not(objDropped())):
                 return hScale*heightTarget
@@ -333,7 +330,7 @@ class SawyerNutAssemblyEnv(SawyerXYZEnv):
         assert ((placeRew >=0) and (pickRew>=0))
         reward = reachRew + pickRew + placeRew
         success = (abs(objPos[0] - placingGoal[0]) < 0.03 and abs(objPos[1] - placingGoal[1]) < 0.03 and placingDistFinal <= 0.04)
-        return [reward, reachRew, reachDist, pickRew, placeRew, placingDist, placingDistFinal, success] 
+        return [reward, reachRew, reachDist, pickRew, placeRew, placingDist, placingDistFinal, success]
 
     def get_diagnostics(self, paths, prefix=''):
         statistics = OrderedDict()

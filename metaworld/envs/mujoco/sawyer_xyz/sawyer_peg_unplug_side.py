@@ -14,7 +14,16 @@ from metaworld.envs.mujoco.sawyer_xyz.base import OBS_TYPE
 
 
 class SawyerPegUnplugSideEnv(SawyerXYZEnv):
-    def __init__(
+    def __init__(self):
+        hand_low=(-0.5, 0.40, 0.05)
+        hand_high=(0.5, 1, 0.5)
+        SawyerXYZEnv.__init__(
+            self,
+            hand_low=hand_low,
+            hand_high=hand_high,
+        )
+
+    def _set_task_inner(
             self,
             random_init=False,
             goal_low=(-0.25, 0.6, 0.05),
@@ -23,22 +32,10 @@ class SawyerPegUnplugSideEnv(SawyerXYZEnv):
             obs_type ='plain',
             rotMode='fixed',
             rewMode='orig',
-            **kwargs
     ):
-
-        hand_low=(-0.5, 0.40, 0.05)
-        hand_high=(0.5, 1, 0.5)
         obj_low=(-0.25, 0.6, 0.05)
         obj_high=(-0.15, 0.8, 0.05)
-        SawyerXYZEnv.__init__(
-            self,
-            frame_skip=5,
-            action_scale=1./100,
-            hand_low=hand_low,
-            hand_high=hand_high,
-            model_name=self.model_name,
-            **kwargs
-        )
+
 
         self.init_config = {
             'obj_init_pos': np.array([-0.225, 0.6, 0.05]),
@@ -180,7 +177,7 @@ class SawyerPegUnplugSideEnv(SawyerXYZEnv):
         self.data.site_xpos[self.model.site_name2id('objSite')] = (
             objPos
         )
-    
+
     def _set_goal_marker(self, goal):
         """
         This should be use ONLY for visualization. Use self._state_goal for
@@ -262,7 +259,7 @@ class SawyerPegUnplugSideEnv(SawyerXYZEnv):
         reachDist = np.linalg.norm(objPos - fingerCOM)
 
         placingDist = np.linalg.norm(objPos[:-1] - placingGoal[:-1])
-      
+
 
         def reachReward():
             reachDistxy = np.linalg.norm(objPos[:-1] - fingerCOM[:-1])
@@ -299,7 +296,7 @@ class SawyerPegUnplugSideEnv(SawyerXYZEnv):
         placeRew , placingDist = placeReward()
         assert placeRew >=0
         reward = reachRew + placeRew
-        return [reward, reachRew, reachDist, None, placeRew, placingDist]  
+        return [reward, reachRew, reachDist, None, placeRew, placingDist]
 
     def get_diagnostics(self, paths, prefix=''):
         statistics = OrderedDict()
