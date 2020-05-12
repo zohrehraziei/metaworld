@@ -4,10 +4,11 @@ from typing import OrderedDict, List, Type
 
 import gym
 
+EnvID = str
 
 class Task(namedtuple):
-    env_id: str
-    data: bytes
+    env_id: EnvID
+    data: bytes  # Contains env parameters like random_init and *a* goal
 
 
 class MetaWorldEnv(gym.Env):
@@ -26,15 +27,15 @@ class MetaWorldEnv(gym.Env):
         """
 
 
-def from_task(task: Task) -> MetaWorldEnv:
-    """Returns: MetaEnv with the task set."""
-
-
 class Benchmark:
 
     @classmethod
-    def get_env_classes(cls) -> OrderedDict[str, Type]:
-        """Get all of the environment classes used by this Benchmark."""
+    def get_train_classes(cls) -> OrderedDict[EnvID, Type]:
+        """Get all of the environment classes used for training."""
+
+    @classmethod
+    def get_test_classes(cls) -> OrderedDict[EnvID, Type]:
+        """Get all of the environment classes used for testing."""
 
     @classmethod
     def get_train_tasks(cls) -> List[Task]:
