@@ -75,6 +75,7 @@ class SawyerReachPushPickPlaceEnv(SawyerXYZEnv):
         return get_asset_full_path('sawyer_xyz/sawyer_reach_push_pick_and_place.xml')
 
     def step(self, action):
+        import ipdb; ipdb.set_trace()
         self.set_xyz_action(action[:3])
         self.do_simulation([action[-1], -action[-1]])
         # The marker seems to get reset every time you do a simulation
