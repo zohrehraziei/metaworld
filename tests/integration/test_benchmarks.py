@@ -1,3 +1,4 @@
+import numpy as np
 import pytest
 
 from metaworld.benchmarks import ML1, MT10, ML10, ML45, MT50
@@ -89,39 +90,31 @@ from tests.helpers import step_env
 #     mt50_env.close()
 #     del mt50_env
 
-@pytest.mark.parametrize('env_cls', ['push-v1'])  #  list(ALL_ENVIRONMENTS.keys())
+@pytest.mark.parametrize('env_cls', list(ALL_ENVIRONMENTS.keys()))  # ['push-v1', 'reach-v1']
 def test_valid_goal(env_cls):
-    env = ALL_ENVIRONMENTS[env_cls](random_init=False, task_type='push')
     """Verify that the goal set by env is reachable by the end effector."""
-    goal = env._state_goal
+    task_types = ['pick-place', 'reach', 'push']
+    task_type = None
+    for name in task_types:
+        if name in env_cls:
+            task_type = name
+        if task_type == 'pick-place':
+            task_type = 'pick_place'
+    if env_cls in ['push-back-v1', 'stick-push-v1']:
+        task_type = None
+    if task_type:
+        env = ALL_ENVIRONMENTS[env_cls](random_init=True, task_type=task_type)
+    else:
+        env = ALL_ENVIRONMENTS[env_cls](random_init=True)
 
-    curr_time_step = 1
-    total_time_steps = 0
-    while 1:
-        # env.step(env.action_space.sample())
-        env.render()
-        if curr_time_step == env.max_path_length:
-            curr_time_step = 0
-            env.reset()
-        curr_time_step += 1
-        total_time_steps += 1
-        if total_time_steps > env.max_path_length*5:
-            break
-
-    env.data.set_mocap_pos('mocap', goal)
-    import numpy as np
-    env.data.set_mocap_quat('mocap', np.array([1, 0, 1, 0]))
-    assert (env.data.get_mocap_pos('mocap') == goal).all()
-    for _ in range(5):
+    for _ in range(500):
+        goal = env._state_goal
+        env.data.set_mocap_pos('mocap', goal)
+        inital_endeff_pos = env.get_endeff_pos()
+        env.data.set_mocap_quat('mocap', np.array([1, 0, 1, 0]))
+        assert (env.data.get_mocap_pos('mocap') == goal).all()
+        for _ in range(1000):
             env.sim.step()
-    import ipdb; ipdb.set_trace()
-    while 1:
-        # env.step(env.action_space.sample())
-        env.render()
-        if curr_time_step == env.max_path_length:
-            curr_time_step = 0
-            env.reset()
-        curr_time_step += 1
-        if curr_time_step == env.max_path_length*5:
-            break
+        assert np.isclose(goal, env.get_endeff_pos(), atol=0.05).all()
+        env.reset()
     del env

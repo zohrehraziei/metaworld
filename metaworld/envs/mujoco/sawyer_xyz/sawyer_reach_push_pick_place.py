@@ -75,9 +75,15 @@ class SawyerReachPushPickPlaceEnv(SawyerXYZEnv):
         return get_asset_full_path('sawyer_xyz/sawyer_reach_push_pick_and_place.xml')
 
     def step(self, action):
-        import ipdb; ipdb.set_trace()
         self.set_xyz_action(action[:3])
-        self.do_simulation([action[-1], -action[-1]])
+        # self.do_simulation([action[-1], -action[-1]])
+        ctrl = [action[-1], -action[-1]]
+        if getattr(self, 'curr_path_length', 0) > self.max_path_length:
+            raise ValueError('Maximum path length allowed by the benchmark has been exceeded')
+        n_frames = self.frame_skip
+        # self.sim.data.ctrl[:] = ctrl
+        for _ in range(n_frames):
+            self.sim.step()
         # The marker seems to get reset every time you do a simulation
         self._set_goal_marker(self._state_goal)
         ob = self._get_obs()
