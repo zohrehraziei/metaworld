@@ -1,5 +1,4 @@
-from metaworld.policies.sawyer_button_press_v1_policy import (
-    SawyerButtonPressV1Policy)
+from metaworld.policies.sawyer_button_press_v1_policy import SawyerButtonPressV1Policy
 from metaworld.policies.sawyer_button_press_topdown_v1_policy import SawyerButtonPressTopdownV1Policy
 from metaworld.policies.sawyer_coffee_button_v1_policy import SawyerCoffeeButtonV1Policy
 from metaworld.policies.sawyer_coffee_pull_v1_policy import SawyerCoffeePullV1Policy
@@ -8,6 +7,10 @@ from metaworld.policies.sawyer_door_open_v1_policy import SawyerDoorOpenV1Policy
 from metaworld.policies.sawyer_door_close_v1_policy import SawyerDoorCloseV1Policy
 from metaworld.policies.sawyer_drawer_open_v1_policy import SawyerDrawerOpenV1Policy
 from metaworld.policies.sawyer_drawer_close_v1_policy import SawyerDrawerCloseV1Policy
+from metaworld.policies.sawyer_handle_press_side_v2_policy import SawyerHandlePressSideV2Policy
+from metaworld.policies.sawyer_handle_press_v1_policy import SawyerHandlePressV1Policy
+from metaworld.policies.sawyer_handle_pull_side_v1_policy import SawyerHandlePullSideV1Policy
+from metaworld.policies.sawyer_handle_pull_v1_policy import SawyerHandlePullV1Policy
 from metaworld.policies.sawyer_lever_pull_v2_policy import SawyerLeverPullV2Policy
 from metaworld.policies.sawyer_plate_slide_back_side_v2_policy import SawyerPlateSlideBackSideV2Policy
 from metaworld.policies.sawyer_plate_slide_back_v1_policy import SawyerPlateSlideBackV1Policy
@@ -37,6 +40,10 @@ __all__ = [
     'SawyerDoorCloseV1Policy',
     'SawyerDrawerOpenV1Policy',
     'SawyerDrawerCloseV1Policy',
+    'SawyerHandlePressSideV2Policy',
+    'SawyerHandlePressV1Policy',
+    'SawyerHandlePullSideV1Policy',
+    'SawyerHandlePullV1Policy',
     'SawyerLeverPullV2Policy',
     'SawyerPlateSlideBackSideV2Policy',
     'SawyerPlateSlideBackV1Policy',
